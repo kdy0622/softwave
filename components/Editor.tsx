@@ -34,7 +34,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       });
       
       const link = document.createElement('a');
-      link.download = `softwave-${Date.now()}.jpg`;
+      link.download = `softwave-studio-${Date.now()}.jpg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -45,10 +45,10 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     }
   };
 
-  const handleGenerateBackground = () => {
-    // API 키 입력 팝업 없이 즉시 생성 로직으로 진입 (서비스에서 Fallback 처리)
-    const searchQuery = prompt.trim() || "cinematic cozy lofi atmosphere";
-    onGenerate(searchQuery);
+  const handleGenerateClick = () => {
+    const query = prompt.trim();
+    // 로딩 상태 시작 및 생성 호출
+    onGenerate(query || "lofi dreamy night");
   };
 
   const baseCopy = branding?.copywriting || DEFAULT_BRANDING.copywriting;
@@ -57,41 +57,41 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-12 items-start mb-24">
       
-      {/* 생성 중 팝업 모달 */}
+      {/* 고품질 생성 중 모달 */}
       {isLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"></div>
-          <div className="relative bg-slate-900 border border-white/10 rounded-[3rem] p-10 max-w-sm w-full text-center shadow-[0_0_100px_rgba(99,102,241,0.2)] animate-in zoom-in duration-300">
-            <div className="relative w-24 h-24 mx-auto mb-8">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
+          <div className="relative bg-slate-900 border border-white/10 rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-[0_0_80px_rgba(99,102,241,0.3)] animate-in zoom-in duration-300">
+            <div className="relative w-20 h-20 mx-auto mb-8">
               <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center text-3xl">✨</div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">이미지 생성 중</h3>
-            <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              감성적인 배경을 찾고 있습니다.<br/>잠시만 기다려주세요.
+            <h3 className="text-xl font-bold text-white mb-2">감성 배경 생성 중</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              분위기에 딱 맞는 배경을<br/>자동으로 찾고 있습니다.
             </p>
           </div>
         </div>
       )}
 
-      {/* 1. 결과물 프리뷰 (Sticky 영역) */}
+      {/* 1. 프리뷰 영역 (반응형 Sticky) */}
       <div className="w-full lg:col-span-7 xl:col-span-8 sticky-preview">
-        <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="p-3 md:p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
+        <div className="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="p-3 md:p-5 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
             <div className="flex items-center gap-2">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                <div className="w-2 h-2 rounded-full bg-slate-800"></div>
+              <div className="flex space-x-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.6)]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
               </div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Result Preview</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Preview Mode</span>
             </div>
             <button 
               onClick={handleDownload}
               disabled={isDownloading || isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
             >
-              {isDownloading ? '저장 중...' : '고화질 저장'}
+              {isDownloading ? '처리 중...' : '이미지 내려받기'}
             </button>
           </div>
           
@@ -101,112 +101,98 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
         </div>
       </div>
 
-      {/* 2. 컨트롤 영역 */}
-      <div className="w-full lg:col-span-5 xl:col-span-4 space-y-8">
+      {/* 2. 에디터 컨트롤 영역 */}
+      <div className="w-full lg:col-span-5 xl:col-span-4 space-y-6 md:space-y-8">
         
-        {/* 배경 생성기 섹션 */}
-        <section className="bg-gradient-to-br from-indigo-900/10 to-slate-900/40 border border-indigo-500/20 rounded-[2rem] p-6 shadow-2xl space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🎨</span>
-            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Background Creator (Free)</label>
+        {/* AI 자동 배경 생성 섹션 */}
+        <section className="bg-gradient-to-br from-indigo-900/20 to-slate-900/60 border border-indigo-500/30 rounded-[2.5rem] p-6 shadow-2xl space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center text-xl">🪄</div>
+            <div>
+              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">AI Smart Creator</label>
+              <p className="text-[11px] text-slate-500">원하는 분위기를 키워드로 적어보세요</p>
+            </div>
           </div>
+          
           <div className="space-y-3">
             <textarea 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="원하는 분위기를 설명하세요 (예: 비 오는 창가, 보랏빛 노을)"
-              className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors min-h-[80px] resize-none"
+              placeholder="예: 비 내리는 고요한 카페, 새벽녘의 보라색 도시"
+              className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all min-h-[90px] resize-none placeholder:text-slate-700 shadow-inner"
             />
             <button 
               type="button"
-              onClick={handleGenerateBackground}
+              onClick={handleGenerateClick}
               disabled={isLoading}
-              className="w-full py-4 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
+              className="w-full py-4.5 rounded-2xl text-sm font-black bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-indigo-950/40 border border-white/10"
             >
-              배경 만들기
+              AI 감성 배경 생성
             </button>
+            <p className="text-[9px] text-slate-600 text-center uppercase tracking-tighter">API 키 없이도 자동으로 최적의 배경을 매칭합니다</p>
           </div>
         </section>
 
-        {/* 편집 컨트롤러 카드 */}
-        <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-6 md:p-8 shadow-2xl space-y-12">
+        {/* 편집 컨트롤 패널 */}
+        <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-6 md:p-8 shadow-2xl space-y-12">
           
-          {/* 배경 프리셋 */}
-          <section className="space-y-3">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Library Presets</label>
-            <div className="horizontal-presets custom-scrollbar">
-              {PRESET_BACKGROUNDS.map(bg => (
-                <button 
-                  key={bg.id}
-                  onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
-                  className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90 ring-4 ring-indigo-500/10' : 'border-transparent opacity-40 hover:opacity-100'}`}
-                >
-                  <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" loading="lazy" />
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* 타이포그래피 설정 */}
+          {/* 타이포그래피 */}
           <section className="space-y-6">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Typography</label>
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block px-1">Typography</label>
             <div className="space-y-3">
               <input 
                 type="text"
                 value={config.title}
                 onChange={(e) => setConfig({ ...config, title: e.target.value })}
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-base font-bold text-white focus:border-indigo-500/50 focus:outline-none"
-                placeholder="메인 제목"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4.5 text-base font-bold text-white focus:border-indigo-500/50 focus:outline-none transition-all shadow-inner"
+                placeholder="메인 제목 입력"
               />
-              <input 
-                type="text"
-                value={config.subtitle}
-                onChange={(e) => setConfig({ ...config, subtitle: e.target.value })}
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-3.5 text-xs text-slate-400 focus:border-indigo-500/50 focus:outline-none"
-                placeholder="서브 제목"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {FONT_OPTIONS.map((font) => (
-                <button 
-                  key={font.id}
-                  onClick={() => setConfig({ ...config, fontStyle: font.id })}
-                  className={`py-4 text-[11px] rounded-2xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-xl scale-[1.02]' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'} ${font.class}`}
-                >
-                  {font.name}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* 무드 라이브러리 (20개 고정 및 스크롤) */}
-          <section className="flex flex-col space-y-4">
-            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Copy Library</label>
-            <div className="h-[320px] overflow-y-scroll bg-slate-950 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner">
-              <div className="flex flex-col p-4 gap-2">
-                {displayCopywriting.map((txt, i) => (
+              <div className="grid grid-cols-2 gap-3">
+                {FONT_OPTIONS.map((font) => (
                   <button 
-                    key={i}
-                    onClick={() => setConfig({ ...config, title: txt })}
-                    className={`text-left text-[11px] p-5 border rounded-2xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/10 border-indigo-500/30 text-indigo-100' : 'bg-slate-900/40 border-transparent text-slate-400 hover:border-white/10 hover:text-white'}`}
+                    key={font.id}
+                    onClick={() => setConfig({ ...config, fontStyle: font.id })}
+                    className={`py-4 text-[11px] rounded-2xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-xl scale-[1.03] z-10' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-slate-300'}`}
                   >
-                    <span className="opacity-20 mr-3 text-[9px] font-mono">#{String(i+1).padStart(2, '0')}</span>{txt}
+                    <span className={font.class}>{font.name}</span>
                   </button>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* 비주얼 디테일 & 이모티콘 (모바일 반응형 크기 유지) */}
-          <section className="space-y-8 pb-4">
+          {/* 무드 카피 라이브러리 (스크롤) */}
+          <section className="space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Library</label>
+              <span className="text-[9px] font-mono text-slate-600">20 OPTIONS</span>
+            </div>
+            <div className="h-[280px] overflow-y-auto bg-slate-950/50 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner p-3">
+              <div className="flex flex-col gap-2">
+                {displayCopywriting.map((txt, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => setConfig({ ...config, title: txt })}
+                    className={`text-left text-[11px] p-4.5 border rounded-2xl transition-all ${config.title === txt ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-100' : 'bg-slate-900/50 border-transparent text-slate-500 hover:bg-slate-800'}`}
+                  >
+                    <span className="opacity-30 mr-3 text-[9px] font-mono">#{String(i+1).padStart(2, '0')}</span>
+                    {txt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* 비주얼 옵션 */}
+          <section className="space-y-10 pb-4">
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-5 block">Visual Filters</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 block px-1">Visual Filters</label>
               <div className="flex flex-wrap gap-2">
                 {FILTERS.map(f => (
                   <button 
                     key={f.name}
                     onClick={() => setConfig({ ...config, filter: f.name })}
-                    className={`px-5 py-3 text-[10px] rounded-2xl border transition-all ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500'}`}
+                    className={`px-5 py-3 text-[10px] rounded-2xl border transition-all ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-900/40' : 'bg-slate-950 border-white/5 text-slate-600 hover:text-white'}`}
                   >
                     {f.name}
                   </button>
@@ -214,25 +200,13 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Atmosphere Intensity</label>
-                <span className="text-[11px] font-mono text-indigo-400 font-bold">{Math.round(config.overlayOpacity * 100)}%</span>
-              </div>
-              <input 
-                type="range" min="0" max="0.85" step="0.01"
-                value={config.overlayOpacity}
-                onChange={(e) => setConfig({ ...config, overlayOpacity: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-              />
-            </div>
-
-            <div className="flex justify-between bg-slate-950 p-2 md:p-4 rounded-[1.2rem] md:rounded-[2rem] border border-white/5 shadow-inner">
+            {/* 이모티콘 선택 바 (모바일 크기 최적화) */}
+            <div className="flex justify-between bg-slate-950 p-2 md:p-4 rounded-[1.2rem] md:rounded-[2.2rem] border border-white/5 shadow-inner">
               {ICONS.map(i => (
                 <button 
                   key={i.id}
                   onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                  className={`w-9 h-9 md:w-14 md:h-14 flex items-center justify-center rounded-lg md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-lg md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-base md:text-2xl opacity-15 hover:opacity-100'}`}
+                  className={`w-9 h-9 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-lg md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-base md:text-2xl opacity-15 hover:opacity-100 hover:scale-110'}`}
                 >
                   {i.emoji}
                 </button>

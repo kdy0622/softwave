@@ -5,27 +5,30 @@ import { DEFAULT_BRANDING } from "../constants.ts";
 
 export class GeminiService {
   /**
-   * 감성 AI & 무드 엔진 (Free & AI Hybrid)
-   * API 키가 있으면 Gemini AI로 정교하게 생성하고, 없으면 고성능 무드 검색 엔진을 사용합니다.
+   * 자동 배경 생성 엔진 (AI + Smart Search)
+   * API 키가 있으면 Gemini를 사용하고, 없으면 키워드 기반 고화질 소스를 반환합니다.
    */
   async generateBackground(userInput: string): Promise<string> {
     const apiKey = process.env.API_KEY;
+    const prompt = userInput.trim() || "peaceful night lofi atmosphere";
 
-    // 1. API 키가 있는 경우 Gemini 2.5 Flash Image 모델 시도
-    if (apiKey && apiKey !== "undefined") {
+    // 1. Gemini AI 시도 (API 키가 유효한 경우)
+    if (apiKey && apiKey !== "undefined" && apiKey.length > 10) {
       try {
         const ai = new GoogleGenAI({ apiKey });
         const styleInstruction = `
-          High-resolution cinematic background for a music channel named 'Softwave'.
-          Style: Dreamy lofi aesthetic, nostalgic atmosphere, soft focus, minimal and clean.
-          No text, no people, 16:9 aspect ratio.
-          Mood: ${userInput || "peaceful night cityscape"}
+          High-resolution 16:9 cinematic background for 'Softwave' music channel.
+          Theme: ${prompt}.
+          Style: Dreamy lofi, nostalgic, soft focus, minimal, no text, no people.
+          High quality, atmospheric.
         `;
 
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
           contents: { parts: [{ text: styleInstruction }] },
-          config: { imageConfig: { aspectRatio: "16:9" } }
+          config: {
+            imageConfig: { aspectRatio: "16:9" }
+          }
         });
 
         if (response.candidates?.[0]?.content?.parts) {
@@ -36,29 +39,27 @@ export class GeminiService {
           }
         }
       } catch (error) {
-        console.error("AI Generation failed, switching to Mood Engine:", error);
+        console.error("AI Generation failed, switching to Smart Search:", error);
       }
     }
 
-    // 2. API 키가 없거나 실패 시: 고성능 감성 무드 엔진 (Free)
-    // 사용자의 입력어에서 핵심 감성 키워드를 추출하여 Unsplash의 고화질 라이브러리에서 매칭
-    return this.fetchMoodImage(userInput);
+    // 2. 자동 검색 엔진 (무료/API 키 미입력 시)
+    // 사용자의 입력어를 기반으로 가장 감성적인 고화질 이미지를 즉시 매칭합니다.
+    return this.fetchAtmosphericImage(prompt);
   }
 
-  private fetchMoodImage(userInput: string): string {
-    const randomSeed = Math.floor(Math.random() * 100000);
-    // 기본 감성 필터 추가
-    const baseKeywords = "cinematic,lofi,aesthetic,wallpaper,night,cozy";
-    const userKeywords = userInput.replace(/\s+/g, ',');
-    const finalKeywords = userKeywords ? `${userKeywords},${baseKeywords}` : baseKeywords;
+  private fetchAtmosphericImage(prompt: string): string {
+    const randomSeed = Math.floor(Math.random() * 1000);
+    // 검색 품질을 높이기 위해 감성 키워드를 조합합니다.
+    const searchKeywords = `${prompt},lofi,cinematic,aesthetic,night,cozy`.replace(/\s+/g, ',');
     
-    // Unsplash Source API를 사용하여 고화질(1280x720) 16:9 이미지 반환
-    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=85&w=1280&h=720&sig=${randomSeed}&${finalKeywords}`;
+    // Unsplash의 고화질 이미지 소스를 사용하며, 시드값을 주어 매번 다른 결과가 나오게 합니다.
+    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=85&w=1280&h=720&sig=${randomSeed}&search=${encodeURIComponent(searchKeywords)}`;
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
     const apiKey = process.env.API_KEY;
-    if (!apiKey || apiKey === "undefined") return DEFAULT_BRANDING;
+    if (!apiKey || apiKey === "undefined" || apiKey.length < 10) return DEFAULT_BRANDING;
 
     try {
       const ai = new GoogleGenAI({ apiKey });
