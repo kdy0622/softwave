@@ -5,20 +5,19 @@ import { DEFAULT_BRANDING } from "../constants.ts";
 
 export class GeminiService {
   /**
-   * 감성 배경 생성 엔진 (AI + Smart Mood Engine v3)
-   * API 키가 없어도 무조건 고화질 이미지를 반환합니다.
+   * 고화질 저작권 무료 배경 생성 (AI + Smart Match Engine)
    */
   async generateBackground(userInput: string): Promise<string> {
     const apiKey = process.env.API_KEY;
     const cleanPrompt = (userInput || "").trim().toLowerCase();
 
-    // 1. Gemini AI 시도 (API 키가 유효할 때만)
+    // 1. Gemini AI 시도 (API 키가 유효한 경우)
     if (apiKey && apiKey !== "undefined" && apiKey.length > 15) {
       try {
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
-          contents: { parts: [{ text: `16:9 cinematic lofi background, aesthetic, dreamy: ${cleanPrompt}` }] },
+          contents: { parts: [{ text: `High resolution cinematic 16:9 lofi background: ${cleanPrompt}` }] },
           config: { imageConfig: { aspectRatio: "16:9" } }
         });
 
@@ -27,11 +26,12 @@ export class GeminiService {
           return `data:image/png;base64,${part.inlineData.data}`;
         }
       } catch (e) {
-        console.warn("Gemini failing, using Mood Engine...");
+        console.warn("AI Generation fallback to Smart Engine...");
       }
     }
 
-    // 2. 무적의 무드 엔진 (API 키 없이도 100% 작동)
+    // 2. 스마트 매칭 엔진 (API 키 미입력 시 100% 작동)
+    // Softwave 감성에 최적화된 고화질 저작권 프리 이미지 풀
     const moodPool: Record<string, string[]> = {
       rain: ["1515694346937-94d85e41e6f0", "1534274988757-a28bf1f539cf", "1428592953211-077101b2021b", "1519692933481-e162a57d6721"],
       night: ["1516339901601-2e1b62dc0c45", "1477959858617-67f85cf4f1df", "1506744038136-46273834b3fb", "1483706600675-2b47a8b47e9e"],
@@ -54,7 +54,7 @@ export class GeminiService {
     else if (cleanPrompt.includes("도시") || cleanPrompt.includes("city")) selectedPool = moodPool.city;
 
     const randomId = selectedPool[Math.floor(Math.random() * selectedPool.length)];
-    // sig 값을 주어 매번 새로운 랜덤 이미지가 로드되도록 함
+    // sig 값을 주어 매번 새로운 랜덤 이미지가 로드되도록 함 (Unsplash/Pixabay 수준의 고화질)
     return `https://images.unsplash.com/photo-${randomId}?auto=format&fit=crop&q=85&w=1280&h=720&sig=${Math.random()}`;
   }
 

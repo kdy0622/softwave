@@ -14,7 +14,7 @@ const App: React.FC = () => {
     filter: '없음',
     fontStyle: 'serif',
     icon: '🌙',
-    overlayOpacity: 0.3,
+    overlayOpacity: 0.2, // 기존 0.3에서 0.2로 밝게 조정
   });
   
   const [branding, setBranding] = useState<BrandingGuide | null>(null);
@@ -52,7 +52,6 @@ const App: React.FC = () => {
       <header className="border-b border-white/5 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-            {/* S 로고 대신 SOFTWAVE 텍스트 로고 적용 */}
             <div className="h-7 md:h-8 px-2.5 md:px-3.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg md:rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/20 text-[10px] md:text-[11px] tracking-tighter italic">
               SOFTWAVE
             </div>

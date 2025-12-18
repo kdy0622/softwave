@@ -98,26 +98,27 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         )}
       </div>
 
+      {/* 가독성 최적화를 위해 오버레이 그라데이션 수정 */}
       <div 
-        className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity z-10"
-        style={{ opacity: Math.max(0.3, config.overlayOpacity + 0.15) }}
+        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity z-10"
+        style={{ opacity: config.overlayOpacity }}
       ></div>
 
       <div className="absolute inset-0 p-[8%] flex flex-col justify-end items-start z-20">
         {config.icon && (
-          <div className="text-[11vw] md:text-6xl mb-6 md:mb-10 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] opacity-95">
+          <div className="text-[11vw] md:text-6xl mb-6 md:mb-10 opacity-95 filter drop-shadow-[0_0_20px_rgba(0,0,0,0.8)] drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]">
             {config.icon}
           </div>
         )}
         
-        <div className="w-full flex flex-col items-start gap-1">
+        <div className="w-full flex flex-col items-start gap-1 filter drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
           <h1 
             ref={titleRef}
             className={`${selectedFont?.class} ${fontStyles.baseSize} ${fontStyles.weight} ${fontStyles.extra} text-white whitespace-nowrap origin-left transition-transform duration-300`}
             style={{ 
               transform: `scale(${titleScale})`,
               width: 'max-content',
-              textShadow: '0 4px 20px rgba(0,0,0,0.8)'
+              textShadow: '2px 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4)'
             }}
           >
             {config.title}
@@ -132,16 +133,19 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
             }}
           >
             <div className="w-8 md:w-12 h-1 bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)]"></div>
-            <p className="text-[3vw] md:text-[18px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.4em] uppercase whitespace-nowrap opacity-80 drop-shadow-xl">
+            <p 
+              className="text-[3vw] md:text-[18px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.4em] uppercase whitespace-nowrap opacity-80 drop-shadow-xl"
+              style={{ textShadow: '1px 1px 5px rgba(0,0,0,0.8)' }}
+            >
               {config.subtitle}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 브랜딩 워터마크 - 크기를 아주 작게(Very Small) 조정 */}
-      <div className="absolute top-[5%] right-[5%] flex items-center bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/5 z-30 scale-50 md:scale-[0.65] origin-right">
-        <span className="text-[1vw] md:text-[10px] tracking-[0.4em] font-black text-white uppercase opacity-40 whitespace-nowrap">SOFTWAVE STUDIO</span>
+      {/* 브랜딩 워터마크 */}
+      <div className="absolute top-[5%] right-[5%] flex items-center bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/5 z-30 scale-50 md:scale-[0.65] origin-right">
+        <span className="text-[1vw] md:text-[10px] tracking-[0.4em] font-black text-white uppercase opacity-50 whitespace-nowrap">SOFTWAVE STUDIO</span>
       </div>
       
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-40"></div>

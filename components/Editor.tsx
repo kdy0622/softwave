@@ -66,9 +66,9 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center text-2xl">🪄</div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">배경 찾는 중...</h3>
+            <h3 className="text-xl font-bold text-white mb-2">이미지 찾는 중...</h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              최적의 감성 이미지를<br/>자동으로 가져오고 있습니다.
+              최적의 감성 이미지를<br/>자동으로 매칭하고 있습니다.
             </p>
           </div>
         </div>
@@ -103,12 +103,12 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       {/* 2. 에디터 컨트롤 영역 */}
       <div className="w-full lg:col-span-5 xl:col-span-4 space-y-6 md:space-y-8">
         
-        {/* AI 자동 배경 생성 섹션 */}
+        {/* 자동 배경 생성 섹션 */}
         <section className="bg-gradient-to-br from-indigo-900/20 to-slate-900/60 border border-indigo-500/30 rounded-[2.5rem] p-6 shadow-2xl space-y-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center text-xl">🪄</div>
+            <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center text-xl">✨</div>
             <div>
-              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">AI Smart Creator</label>
+              <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Auto Mood Creator</label>
               <p className="text-[11px] text-slate-500">원하는 테마를 입력하고 배경을 만드세요</p>
             </div>
           </div>
@@ -126,16 +126,16 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               disabled={isLoading}
               className="w-full py-4.5 rounded-2xl text-sm font-black bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-indigo-950/40 border border-white/10"
             >
-              배경 만들기
+              배경생성
             </button>
-            <p className="text-[9px] text-slate-600 text-center uppercase tracking-tighter">API 키 없이도 지능형 매칭을 통해 즉시 배경을 변경합니다</p>
+            <p className="text-[9px] text-slate-600 text-center uppercase tracking-tighter">API 키 없이도 지능형 엔진이 즉시 배경을 찾아드립니다</p>
           </div>
         </section>
 
         {/* 편집 컨트롤 패널 */}
         <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-6 md:p-8 shadow-2xl space-y-10">
           
-          {/* 라이브러리 프리셋 (10개 복구됨) */}
+          {/* 라이브러리 프리셋 */}
           <section className="space-y-4">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block px-1">Library Presets</label>
             <div className="horizontal-presets custom-scrollbar pb-2">
@@ -149,6 +149,24 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 </button>
               ))}
             </div>
+          </section>
+
+          {/* 가독성 제어 슬라이더 (새로 추가됨) */}
+          <section className="space-y-4">
+             <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Visibility (Darkness)</label>
+                <span className="text-[10px] font-mono text-indigo-400">{Math.round(config.overlayOpacity * 100)}%</span>
+             </div>
+             <input 
+               type="range"
+               min="0"
+               max="0.8"
+               step="0.01"
+               value={config.overlayOpacity}
+               onChange={(e) => setConfig({ ...config, overlayOpacity: parseFloat(e.target.value) })}
+               className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+             />
+             <p className="text-[9px] text-slate-600">배경이 너무 밝아 글씨가 안 보일 때 수치를 높여주세요.</p>
           </section>
 
           {/* 타이포그래피 */}
