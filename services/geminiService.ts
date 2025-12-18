@@ -8,11 +8,7 @@ export class GeminiService {
    * Gemini 3 Pro Image 모델을 사용한 하이퍼 리얼리스틱 배경 생성
    */
   async generateBackground(userInput: string): Promise<string> {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey || apiKey === "undefined") {
-      throw new Error("API Key is not configured. Please select a valid API key.");
-    }
-
+    // API 키 직접 사용 (시스템이 주입하거나 환경 변수에서 가져옴)
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const cleanPrompt = (userInput || "High-resolution reality").trim();
 
@@ -42,7 +38,7 @@ export class GeminiService {
 
       const candidate = response.candidates?.[0];
       if (!candidate) {
-        throw new Error("No candidates returned from API. Check safety settings or prompt.");
+        throw new Error("API 응답에 결과가 없습니다. 안전 설정이나 프롬프트를 확인해주세요.");
       }
 
       if (candidate.content?.parts) {
@@ -55,24 +51,25 @@ export class GeminiService {
 
       const textPart = candidate.content?.parts?.find(p => p.text);
       if (textPart?.text) {
-        throw new Error(`Model Refusal: ${textPart.text}`);
+        throw new Error(`모델 응답 거부: ${textPart.text}`);
       }
 
-      throw new Error("No image data found in response. The model might have filtered the content.");
+      throw new Error("이미지 데이터를 찾을 수 없습니다.");
     } catch (e: any) {
       console.error("Gemini Pro Image Generation Error Details:", e);
+      
+      // 재시도 요청 또는 특정 에러 핸들링을 위해 특정 문자열을 포함한 에러 throw
       if (e.message?.includes("Requested entity was not found")) {
-        throw new Error("API Key Project Not Found. 유료 프로젝트의 API 키인지 확인해주세요.");
+        throw new Error("API Key Project Not Found");
       }
+      
+      // 에러 발생 시 Unsplash 이미지로 대체 (UX 유지)
       const randomSig = Math.floor(Math.random() * 100000);
       return `https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=90&w=1280&h=720&sig=${randomSig}`;
     }
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey || apiKey === "undefined") return DEFAULT_BRANDING;
-
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({

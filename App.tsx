@@ -34,6 +34,7 @@ const App: React.FC = () => {
         loadBranding();
       }
     } else {
+      // aistudio 환경이 아닌 경우(예: Vercel 배포) 기본적으로 환경 변수 키를 사용하도록 설정
       setHasKey(true);
       loadBranding();
     }
@@ -42,6 +43,7 @@ const App: React.FC = () => {
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
+      // 선택 직후 성공으로 간주하고 UI 진행
       setHasKey(true);
       loadBranding();
     }
@@ -65,11 +67,14 @@ const App: React.FC = () => {
       console.error("이미지 생성 에러:", error);
       const errorMessage = error.message || "";
       
+      // API Key 관련 특정 에러 발생 시 키 선택 화면으로 유도 (aistudio 환경일 때만)
       if (errorMessage.includes("Requested entity was not found") || errorMessage.includes("API Key Project Not Found")) {
-        alert("선택된 API 키가 유효하지 않거나 유료 프로젝트에 연결되어 있지 않습니다. 키를 다시 선택해주세요.");
-        setHasKey(false);
-      } else if (errorMessage.includes("Model Refusal")) {
-        alert(`AI가 이미지를 생성할 수 없습니다: ${errorMessage}`);
+        if (window.aistudio) {
+          alert("선택된 API 키가 유효하지 않거나 유료 프로젝트에 연결되어 있지 않습니다. 키를 다시 선택해주세요.");
+          setHasKey(false);
+        } else {
+          alert("API 키 프로젝트를 찾을 수 없습니다. 설정된 API 키가 유료 플랜(Paid Tier)인지 확인해주세요.");
+        }
       } else {
         alert(`배경 생성 중 오류가 발생했습니다: ${errorMessage || "다시 시도해주세요."}`);
       }
@@ -78,7 +83,8 @@ const App: React.FC = () => {
     }
   };
 
-  if (hasKey === false) {
+  // aistudio 환경에서 키가 없는 경우에만 키 선택 UI 노출
+  if (hasKey === false && window.aistudio) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
         <div className="max-w-md w-full space-y-8 p-12 bg-slate-900 border border-white/10 rounded-[3rem] shadow-2xl">
