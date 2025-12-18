@@ -29,16 +29,11 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
 
   const fontStyles = getFontBaseStyles();
 
-  /**
-   * 텍스트 자동 스케일링
-   * 캔버스 크기(브라우저 크기 vs 1280px 고정 캡처)에 맞춰 텍스트가 잘리지 않게 조정합니다.
-   */
   useLayoutEffect(() => {
     const adjustScale = () => {
       if (!containerRef.current) return;
 
       const containerWidth = containerRef.current.offsetWidth;
-      // html-to-image 캡처 시 강제 1280px 렌더링을 고려한 유효 너비 계산
       const effectiveWidth = containerWidth > 0 && containerWidth < 1200 ? containerWidth : 1280;
       
       const horizontalPadding = effectiveWidth * 0.16; 
@@ -88,7 +83,6 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
       className="relative aspect-video w-full overflow-hidden bg-slate-950 select-none shadow-2xl"
       style={{ isolation: 'isolate', width: '100%', minHeight: '100px', display: 'block' }}
     >
-      {/* 1. 배경 이미지 레이어 */}
       <div className="absolute inset-0 z-0">
         {config.backgroundImage ? (
           <img 
@@ -104,13 +98,11 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         )}
       </div>
 
-      {/* 2. 가독성 오버레이 */}
       <div 
         className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity z-10"
         style={{ opacity: Math.max(0.3, config.overlayOpacity + 0.15) }}
       ></div>
 
-      {/* 3. 텍스트 컨텐츠 레이어 */}
       <div className="absolute inset-0 p-[8%] flex flex-col justify-end items-start z-20">
         {config.icon && (
           <div className="text-[11vw] md:text-6xl mb-6 md:mb-10 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] opacity-95">
@@ -140,19 +132,18 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
             }}
           >
             <div className="w-8 md:w-12 h-1 bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)]"></div>
-            <p className="text-[3vw] md:text-[20px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.5em] uppercase whitespace-nowrap opacity-90 drop-shadow-xl">
+            <p className="text-[3vw] md:text-[18px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.4em] uppercase whitespace-nowrap opacity-80 drop-shadow-xl">
               {config.subtitle}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 4. 브랜딩 워터마크 - 크기 축소 및 투명도 조정 */}
-      <div className="absolute top-[6%] right-[6%] flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5 z-30 scale-75 md:scale-100 origin-right">
-        <span className="text-[1.2vw] md:text-[8px] tracking-[0.3em] font-bold text-white uppercase opacity-50 whitespace-nowrap">SOFTWAVE STUDIO</span>
+      {/* 브랜딩 워터마크 - 크기를 아주 작게(Very Small) 조정 */}
+      <div className="absolute top-[5%] right-[5%] flex items-center bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/5 z-30 scale-50 md:scale-[0.65] origin-right">
+        <span className="text-[1vw] md:text-[10px] tracking-[0.4em] font-black text-white uppercase opacity-40 whitespace-nowrap">SOFTWAVE STUDIO</span>
       </div>
       
-      {/* 5. 시각적 텍스처 오버레이 */}
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-40"></div>
     </div>
   );

@@ -24,11 +24,9 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     if (!canvasRef.current) return;
     setIsDownloading(true);
     
-    // 폰트 렌더링 확정을 위해 약간의 지연
     await new Promise(resolve => setTimeout(resolve, 800));
 
     try {
-      // 1280x720 고해상도 캡처
       const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
         quality: 1.0,
         pixelRatio: 2, 
@@ -61,13 +59,35 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     onGenerate(searchQuery);
   };
 
-  // 무드 카피 20개 (데이터가 부족하면 기본값 보충)
   const baseCopy = branding?.copywriting || DEFAULT_BRANDING.copywriting;
   const displayCopywriting = baseCopy.slice(0, 20);
 
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-12 items-start mb-24">
       
+      {/* AI 생성 팝업 모달 */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"></div>
+          <div className="relative bg-slate-900 border border-white/10 rounded-[3rem] p-10 max-w-sm w-full text-center shadow-[0_0_100px_rgba(99,102,241,0.2)] animate-in zoom-in duration-300">
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center text-3xl">✨</div>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">이미지 생성 중</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+              AI가 당신의 상상을 현실로 만들고 있습니다.<br/>잠시만 기다려주세요.
+            </p>
+            <div className="flex justify-center gap-1">
+              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 1. 결과물 프리뷰 (Sticky 영역) */}
       <div className="w-full lg:col-span-7 xl:col-span-8 sticky-preview">
         <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
@@ -90,12 +110,6 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           
           <div className="relative aspect-video bg-slate-950 flex items-center justify-center overflow-hidden">
             <Canvas ref={canvasRef} config={config} filter={activeFilter} />
-            {isLoading && (
-              <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center z-50">
-                <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-white font-bold text-xs tracking-widest">AI가 배경을 상상하는 중...</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -104,24 +118,24 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       <div className="w-full lg:col-span-5 xl:col-span-4 space-y-8">
         
         {/* AI 배경 생성기 */}
-        <section className="bg-indigo-900/10 border border-indigo-500/20 rounded-[2rem] p-6 shadow-2xl space-y-4">
+        <section className="bg-gradient-to-br from-indigo-900/10 to-slate-900/40 border border-indigo-500/20 rounded-[2rem] p-6 shadow-2xl space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">✨</span>
+            <span className="text-lg">🎨</span>
             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">AI Background Creator</label>
           </div>
           <div className="space-y-3">
             <textarea 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="주제나 배경 설명을 입력하세요 (예: 비 내리는 창밖, 보라색 네온사인, 숲속의 요정)"
+              placeholder="배경 설명을 입력하세요 (예: 비 내리는 도심의 푸른 저녁)"
               className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors min-h-[80px] resize-none"
             />
             <button 
               onClick={handleGenerateAI}
               disabled={isLoading}
-              className="w-full py-3.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
             >
-              {isLoading ? '생성 중...' : '배경 만들기 (AI)'}
+              배경 만들기 (AI)
             </button>
           </div>
         </section>
