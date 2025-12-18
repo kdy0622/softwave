@@ -27,4 +27,33 @@ export const ICONS = [
   { id: 'music', emoji: '🎵', name: '음악' },
 ];
 
-export const DEFAULT_PROMPT = "여기에 유튜브 영상 설명이나 키워드를 입력하세요. 예: '새벽 비오는 창가, 잔잔한 피아노 음악, 고독한 분위기'";
+export const PRESET_BACKGROUNDS = [
+  { id: 'midnight', url: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720', name: '심야의 별빛' },
+  { id: 'rainy', url: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&q=80&w=1280&h=720', name: '창밖의 빗줄기' },
+  { id: 'cafe', url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=1280&h=720', name: '조용한 카페' },
+  { id: 'ocean', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1280&h=720', name: '잔잔한 파도' },
+  { id: 'sunset', url: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=1280&h=720', name: '노을진 들판' },
+];
+
+export const DEFAULT_BRANDING = {
+  keywords: ["고요함", "안식", "새벽", "꿈", "파도"],
+  colors: [
+    { hex: "#0f172a", name: "심해 네이비" },
+    { hex: "#1e293b", name: "새벽 그림자" },
+    { hex: "#475569", name: "차분한 안개" },
+    { hex: "#6366f1", name: "꿈결 보라" }
+  ],
+  layouts: [
+    { id: "centered", name: "중앙 집중형", description: "제목을 중앙에 배치하여 몰입감을 줍니다." },
+    { id: "bottom-left", name: "하단 여백형", description: "배경 이미지를 강조하고 정보를 아래에 둡니다." }
+  ],
+  copywriting: [
+    "잠 못 드는 밤, 당신을 위한 작은 선물",
+    "조용히 흐르는 새벽의 멜로디",
+    "지친 하루 끝에 만나는 따뜻한 위로",
+    "오늘밤, 깊은 꿈속으로 여행을 떠나요",
+    "고요한 숲속의 빗소리 ASMR"
+  ]
+};
+
+export const DEFAULT_PROMPT = "영상 테마를 입력하면 AI가 어울리는 배경을 그려줍니다.";

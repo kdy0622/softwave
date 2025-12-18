@@ -1,95 +1,92 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { BrandingGuide } from "../types.ts";
+import { DEFAULT_BRANDING } from "../constants.ts";
 
 export class GeminiService {
-  private ai: GoogleGenAI;
-
-  constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  private getClient() {
+    return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   }
 
   async generateBackground(userInput: string): Promise<string> {
-    // 사용자의 짧은 단어나 상세 설명을 고퀄리티 이미지 프롬프트로 변환
-    const promptEnhancer = await this.ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `다음은 사용자가 입력한 유튜브 영상 테마 또는 설명입니다: "${userInput}". 
-      이를 바탕으로 'Softwave' 채널(새벽, 휴식, 로파이 감성)에 어울리는 영화 같은 16:9 썸네일 배경 이미지를 생성하기 위한 아주 상세한 영어 프롬프트를 작성해주세요. 
-      결과는 오직 프롬프트 텍스트만 출력하세요. 텍스트 포함 금지, 여백 강조.`
-    });
+    const ai = this.getClient();
+    
+    try {
+      // 1. 프롬프트 고도화 (Flash 모델 사용으로 빠른 응답)
+      const promptEnhancer = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Create a cinematic, text-less 16:9 lofi background image prompt for: "${userInput}". focus on soft aesthetics, dreamy lighting, and emotional atmosphere.`
+      });
 
-    const enhancedPrompt = promptEnhancer.text || userInput;
+      let enhancedPrompt = (promptEnhancer.text || userInput)
+        .replace(/```[a-z]*\n/gi, '')
+        .replace(/```/g, '')
+        .trim();
 
-    const response = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: { parts: [{ text: enhancedPrompt }] },
-      config: {
-        imageConfig: {
-          aspectRatio: "16:9",
+      // 2. 이미지 생성 (gemini-2.5-flash-image 모델 사용 - 일반 환경 최적화)
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: { parts: [{ text: enhancedPrompt }] },
+        config: {
+          imageConfig: {
+            aspectRatio: "16:9"
+          }
+        }
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
         }
       }
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
-      }
+      throw new Error("No image data");
+    } catch (error) {
+      console.error("AI 생성 실패, 로컬 캐시 또는 에러 반환:", error);
+      throw error;
     }
-    throw new Error("이미지 생성에 실패했습니다.");
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
-    const response = await this.ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: "잠 못 드는 밤과 휴식을 테마로 한 음악 채널 'Softwave'를 위한 브랜딩 가이드를 생성해줘. 특히 썸네일에 바로 쓸 수 있는 감성적이고 클릭을 부르는 제목을 20개 이상 제안해줘. 모든 텍스트는 한국어로 작성해.",
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            keywords: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "시각적 키워드 5개."
+    const ai = this.getClient();
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: "음악 채널 'Softwave'를 위한 감성 브랜딩 가이드. 한국어로 JSON 형식 응답.",
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              keywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+              colors: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: { hex: { type: Type.STRING }, name: { type: Type.STRING } },
+                  required: ["hex", "name"]
+                }
+              },
+              layouts: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, description: { type: Type.STRING } },
+                  required: ["id", "name", "description"]
+                }
+              },
+              copywriting: { type: Type.ARRAY, items: { type: Type.STRING } }
             },
-            colors: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  hex: { type: Type.STRING },
-                  name: { type: Type.STRING }
-                },
-                required: ["hex", "name"]
-              }
-            },
-            layouts: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  id: { type: Type.STRING },
-                  name: { type: Type.STRING },
-                  description: { type: Type.STRING }
-                },
-                required: ["id", "name", "description"]
-              }
-            },
-            copywriting: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: "추천 제목 20개."
-            }
-          },
-          required: ["keywords", "colors", "layouts", "copywriting"]
+            required: ["keywords", "colors", "layouts", "copywriting"]
+          }
         }
-      }
-    });
+      });
 
-    if (!response.text) throw new Error("응답이 비어있습니다.");
-    const text = response.text.trim();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const cleanJson = jsonMatch ? jsonMatch[0] : text;
-    return JSON.parse(cleanJson);
+      const text = response.text.trim();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : text);
+    } catch (e) {
+      // API 호출 실패 시 기본 내장 데이터 반환 (무료 체험 모드처럼 동작)
+      return DEFAULT_BRANDING;
+    }
   }
 }
