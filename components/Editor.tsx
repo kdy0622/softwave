@@ -55,6 +55,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
   };
 
   const handleGenerateAI = () => {
+    // 버튼 클릭 즉시 onGenerate 호출 보장
     const searchQuery = prompt.trim() || "cinematic cozy lofi atmosphere";
     onGenerate(searchQuery);
   };
@@ -131,9 +132,10 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors min-h-[80px] resize-none"
             />
             <button 
+              type="button"
               onClick={handleGenerateAI}
               disabled={isLoading}
-              className="w-full py-3.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
+              className="w-full py-4 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
             >
               배경 만들기 (AI)
             </button>
@@ -245,12 +247,13 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               />
             </div>
 
-            <div className="flex justify-between bg-slate-950 p-4 rounded-[2rem] border border-white/5 shadow-inner">
+            {/* 모바일 최적화 이모티콘 섹션 */}
+            <div className="flex justify-between bg-slate-950 p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 shadow-inner">
               {ICONS.map(i => (
                 <button 
                   key={i.id}
                   onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                  className={`w-14 h-14 flex items-center justify-center rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-3xl scale-110 shadow-2xl' : 'bg-transparent text-2xl opacity-15 hover:opacity-100'}`}
+                  className={`w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-xl md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-lg md:text-2xl opacity-15 hover:opacity-100'}`}
                 >
                   {i.emoji}
                 </button>

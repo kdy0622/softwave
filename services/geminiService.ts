@@ -9,7 +9,13 @@ export class GeminiService {
    * gemini-2.5-flash-image 모델을 사용하여 'Softwave' 채널 미학에 맞는 이미지를 생성합니다.
    */
   async generateBackground(userInput: string): Promise<string> {
-    const apiKey = process.env.API_KEY;
+    // 환경 변수 안전 접근
+    let apiKey = '';
+    try {
+      apiKey = process.env.API_KEY || '';
+    } catch (e) {
+      console.warn("API_KEY access failed, using fallback");
+    }
 
     // 1. Gemini AI를 통한 직접 생성 시도
     if (apiKey && apiKey !== "undefined" && apiKey !== "") {
@@ -44,18 +50,26 @@ export class GeminiService {
           }
         }
       } catch (error) {
-        console.warn("AI 이미지 생성 실패, Unsplash 폴백 엔진 가동", error);
+        console.error("AI 이미지 생성 중 오류 발생:", error);
       }
     }
 
     // 2. Fallback: 스마트 무드 엔진 (Unsplash 기반)
+    // 키워드에 따라 연관된 감성 이미지를 불러오도록 Unsplash Source 패턴 활용
     const randomSeed = Math.floor(Math.random() * 1000000);
-    const keywords = userInput ? userInput.split(' ').join(',') : 'lofi,night,cozy,cinematic';
-    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720&sig=${randomSeed}&q=${encodeURIComponent(keywords)}`;
+    const keywords = userInput ? encodeURIComponent(userInput) : 'lofi,night,cozy,cinematic';
+    // images.unsplash.com의 특정 고화질 베이스 이미지에 검색 태그와 시드를 조합하여 폴백
+    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720&sig=${randomSeed}&search=${keywords}`;
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
-    const apiKey = process.env.API_KEY;
+    let apiKey = '';
+    try {
+      apiKey = process.env.API_KEY || '';
+    } catch (e) {
+      return DEFAULT_BRANDING;
+    }
+    
     if (!apiKey || apiKey === "undefined") return DEFAULT_BRANDING;
 
     try {
@@ -95,6 +109,7 @@ export class GeminiService {
       const text = response.text?.trim() || '';
       return JSON.parse(text);
     } catch (e) {
+      console.error("브랜딩 가이드 생성 오류:", e);
       return DEFAULT_BRANDING;
     }
   }
