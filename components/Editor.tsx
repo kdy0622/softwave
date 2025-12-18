@@ -24,26 +24,17 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     if (!canvasRef.current) return;
     setIsDownloading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 800));
-
     try {
+      await new Promise(resolve => setTimeout(resolve, 800));
       const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
         quality: 1.0,
         pixelRatio: 2, 
         backgroundColor: '#020617',
         cacheBust: true,
-        style: {
-          transform: 'none',
-          margin: '0',
-          padding: '0',
-          borderRadius: '0',
-          position: 'static',
-          display: 'block'
-        }
       });
       
       const link = document.createElement('a');
-      link.download = `softwave-thumbnail-${Date.now()}.jpg`;
+      link.download = `softwave-${Date.now()}.jpg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -54,8 +45,8 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     }
   };
 
-  const handleGenerateAI = () => {
-    // 버튼 클릭 즉시 onGenerate 호출 보장
+  const handleGenerateBackground = () => {
+    // API 키 입력 팝업 없이 즉시 생성 로직으로 진입 (서비스에서 Fallback 처리)
     const searchQuery = prompt.trim() || "cinematic cozy lofi atmosphere";
     onGenerate(searchQuery);
   };
@@ -66,7 +57,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-12 items-start mb-24">
       
-      {/* AI 생성 팝업 모달 */}
+      {/* 생성 중 팝업 모달 */}
       {isLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl"></div>
@@ -78,13 +69,8 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
             <h3 className="text-xl font-bold text-white mb-2">이미지 생성 중</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-6">
-              AI가 당신의 상상을 현실로 만들고 있습니다.<br/>잠시만 기다려주세요.
+              감성적인 배경을 찾고 있습니다.<br/>잠시만 기다려주세요.
             </p>
-            <div className="flex justify-center gap-1">
-              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-            </div>
           </div>
         </div>
       )}
@@ -95,7 +81,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           <div className="p-3 md:p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                 <div className="w-2 h-2 rounded-full bg-slate-800"></div>
               </div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2">Result Preview</span>
@@ -103,7 +89,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             <button 
               onClick={handleDownload}
               disabled={isDownloading || isLoading}
-              className="flex items-center gap-2 px-6 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
+              className="flex items-center gap-2 px-6 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50"
             >
               {isDownloading ? '저장 중...' : '고화질 저장'}
             </button>
@@ -118,26 +104,26 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       {/* 2. 컨트롤 영역 */}
       <div className="w-full lg:col-span-5 xl:col-span-4 space-y-8">
         
-        {/* AI 배경 생성기 */}
+        {/* 배경 생성기 섹션 */}
         <section className="bg-gradient-to-br from-indigo-900/10 to-slate-900/40 border border-indigo-500/20 rounded-[2rem] p-6 shadow-2xl space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">🎨</span>
-            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">AI Background Creator</label>
+            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Background Creator (Free)</label>
           </div>
           <div className="space-y-3">
             <textarea 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="배경 설명을 입력하세요 (예: 비 내리는 도심의 푸른 저녁)"
+              placeholder="원하는 분위기를 설명하세요 (예: 비 오는 창가, 보랏빛 노을)"
               className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors min-h-[80px] resize-none"
             />
             <button 
               type="button"
-              onClick={handleGenerateAI}
+              onClick={handleGenerateBackground}
               disabled={isLoading}
               className="w-full py-4 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-900/20"
             >
-              배경 만들기 (AI)
+              배경 만들기
             </button>
           </div>
         </section>
@@ -145,7 +131,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
         {/* 편집 컨트롤러 카드 */}
         <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-6 md:p-8 shadow-2xl space-y-12">
           
-          {/* 배경 프리셋 (기존 10개 유지) */}
+          {/* 배경 프리셋 */}
           <section className="space-y-3">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Library Presets</label>
             <div className="horizontal-presets custom-scrollbar">
@@ -193,16 +179,10 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 무드 라이브러리 (항상 스크롤바 유지 및 20개 고정) */}
+          {/* 무드 라이브러리 (20개 고정 및 스크롤) */}
           <section className="flex flex-col space-y-4">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Copy Library</label>
-              <span className="text-[9px] text-slate-600 font-mono uppercase tracking-tighter">20 SAMPLES</span>
-            </div>
-            <div 
-              className="h-[320px] overflow-y-scroll bg-slate-950 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner block"
-              style={{ display: 'block' }}
-            >
+            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Copy Library</label>
+            <div className="h-[320px] overflow-y-scroll bg-slate-950 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner">
               <div className="flex flex-col p-4 gap-2">
                 {displayCopywriting.map((txt, i) => (
                   <button 
@@ -217,7 +197,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 비주얼 디테일 */}
+          {/* 비주얼 디테일 & 이모티콘 (모바일 반응형 크기 유지) */}
           <section className="space-y-8 pb-4">
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-5 block">Visual Filters</label>
@@ -247,13 +227,12 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               />
             </div>
 
-            {/* 모바일 최적화 이모티콘 섹션 */}
-            <div className="flex justify-between bg-slate-950 p-3 md:p-4 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 shadow-inner">
+            <div className="flex justify-between bg-slate-950 p-2 md:p-4 rounded-[1.2rem] md:rounded-[2rem] border border-white/5 shadow-inner">
               {ICONS.map(i => (
                 <button 
                   key={i.id}
                   onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                  className={`w-10 h-10 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-xl md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-lg md:text-2xl opacity-15 hover:opacity-100'}`}
+                  className={`w-9 h-9 md:w-14 md:h-14 flex items-center justify-center rounded-lg md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-lg md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-base md:text-2xl opacity-15 hover:opacity-100'}`}
                 >
                   {i.emoji}
                 </button>
