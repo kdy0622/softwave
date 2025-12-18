@@ -24,20 +24,28 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     if (!canvasRef.current) return;
     setIsDownloading(true);
     
-    // 캡처 전 폰트 로딩 대기를 위한 짧은 지연
+    // 폰트 로딩 및 렌더링 안정화를 위해 잠시 대기
     await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
-      // 유튜브 썸네일 규격: 1280x720, 2MB 이하
+      /**
+       * html-to-image 캡처 개선:
+       * 모바일에서 작게 보이는 현상은 캡처 시점의 요소 크기가 작기 때문입니다.
+       * style 옵션을 통해 캡처 시점에만 강제로 1280x720 크기로 확장하여 렌더링합니다.
+       */
       const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
-        quality: 0.85, 
+        quality: 0.95, 
         width: 1280,
         height: 720,
-        pixelRatio: 1, 
+        pixelRatio: 1,
         backgroundColor: '#020617',
         cacheBust: true,
         style: {
-          transform: 'none', // 캡처 시 변형 방지
+          transform: 'scale(1)',
+          width: '1280px',
+          height: '720px',
+          position: 'static',
+          display: 'block'
         }
       });
       
@@ -47,7 +55,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       link.click();
     } catch (err) {
       console.error('Download Error:', err);
-      alert('썸네일 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      alert('이미지 저장 중 오류가 발생했습니다. 브라우저 캐시를 비우거나 잠시 후 다시 시도해주세요.');
     } finally {
       setIsDownloading(false);
     }
@@ -76,12 +84,16 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               disabled={isDownloading || isLoading}
               className="flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-lg"
             >
-              {isDownloading ? '준비 중...' : '결과물 저장'}
+              {isDownloading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                  저장 중...
+                </span>
+              ) : '결과물 저장'}
             </button>
           </div>
           
           <div className="relative p-0 bg-slate-950 flex items-center justify-center overflow-hidden">
-            {/* Canvas는 1280x720 원본 비율을 유지하며 캡처됨 */}
             <Canvas ref={canvasRef} config={config} filter={activeFilter} />
             {isLoading && (
               <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
@@ -92,15 +104,15 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </div>
         </div>
 
-        {/* 배경 빠른 변경 도구 */}
-        <div className="hidden lg:flex gap-3 bg-slate-900/50 border border-white/5 rounded-2xl p-3 items-center">
-          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-2">Presets</label>
-          <div className="flex gap-2 overflow-x-auto custom-scrollbar scrollbar-hide flex-1">
+        {/* 배경 빠른 변경 도구: 모바일/태블릿에서도 보이도록 수정 (hidden lg:flex -> flex) */}
+        <div className="flex gap-3 bg-slate-900/50 border border-white/5 rounded-2xl p-3 items-center">
+          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-2 hidden md:block">Presets</label>
+          <div className="flex gap-2 overflow-x-auto custom-scrollbar flex-1 pb-1">
             {PRESET_BACKGROUNDS.map(bg => (
               <button 
                 key={bg.id}
                 onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
-                className={`flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90' : 'border-transparent opacity-40 hover:opacity-100'}`}
+                className={`flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90' : 'border-transparent opacity-60 hover:opacity-100'}`}
               >
                 <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" />
               </button>
@@ -121,7 +133,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="어떤 분위기의 배경을 원하시나요?"
+                placeholder="분위기 입력 (예: 비오는 도시 야경)"
                 className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[12px] text-white focus:outline-none focus:border-indigo-500/50"
               />
               <button 
@@ -129,7 +141,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 disabled={isLoading}
                 className="px-4 py-3 rounded-xl text-[12px] font-bold bg-white/5 text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95"
               >
-                생성
+                검색
               </button>
             </div>
           </section>
@@ -166,11 +178,12 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 3. 무드 라이브러리 (스크롤 고정 수정) */}
+          {/* 3. 무드 라이브러리: 스크롤 가시성 고정 */}
           <section className="flex flex-col space-y-3">
             <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Library Selection</label>
             <div 
               className="h-[280px] md:h-[340px] overflow-y-scroll bg-slate-950 rounded-2xl border border-white/10 custom-scrollbar shadow-inner"
+              style={{ display: 'block' }}
             >
               <div className="flex flex-col p-2 gap-1.5">
                 {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
