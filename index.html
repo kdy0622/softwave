@@ -33,11 +33,10 @@
       .font-rounded-kr { font-family: var(--font-rounded) !important; }
       .font-script-kr { font-family: var(--font-script) !important; }
       
-      /* 무드 라이브러리 스크롤바 강제 노출 및 스타일 */
       .custom-scrollbar {
         scrollbar-width: thin;
         scrollbar-color: #6366f1 rgba(255, 255, 255, 0.05);
-        overflow-y: scroll !important; /* 항상 스크롤 생성 */
+        overflow-y: scroll !important;
       }
       
       .custom-scrollbar::-webkit-scrollbar {
@@ -62,11 +61,10 @@
         -webkit-user-select: none;
       }
 
-      /* 결과물(캔버스) 고정 스타일 */
       @media (max-width: 1023px) {
         .sticky-preview {
           position: sticky;
-          top: 64px; /* Header height */
+          top: 64px;
           z-index: 40;
           background-color: #020617;
           padding-bottom: 12px;
@@ -86,7 +84,6 @@
         }
       }
 
-      /* 가로 스크롤 프리셋용 */
       .horizontal-presets {
         overflow-x: auto !important;
         overflow-y: hidden !important;
@@ -94,6 +91,15 @@
         gap: 0.75rem;
         padding-bottom: 0.5rem;
         -webkit-overflow-scrolling: touch;
+      }
+
+      /* 스케일 애니메이션 */
+      .animate-in {
+        animation: animateIn 0.5s ease-out forwards;
+      }
+      @keyframes animateIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     </style>
     <script type="importmap">

@@ -7,6 +7,7 @@ import BrandingGuideView from './components/BrandingGuideView.tsx';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('editor');
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [config, setConfig] = useState<ThumbnailConfig>({
     backgroundImage: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720',
     title: '잠 못 드는 새벽의 조각들',
@@ -14,7 +15,7 @@ const App: React.FC = () => {
     filter: '없음',
     fontStyle: 'serif',
     icon: '🌙',
-    overlayOpacity: 0.45, // 기본 명암 대비를 높여 가독성 즉각 확보
+    overlayOpacity: 0.45,
   });
   
   const [branding, setBranding] = useState<BrandingGuide | null>(null);
@@ -22,8 +23,29 @@ const App: React.FC = () => {
   const [gemini] = useState(() => new GeminiService());
 
   useEffect(() => {
-    loadBranding();
+    checkApiKey();
   }, []);
+
+  const checkApiKey = async () => {
+    if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+      const selected = await window.aistudio.hasSelectedApiKey();
+      setHasKey(selected);
+      if (selected) {
+        loadBranding();
+      }
+    } else {
+      setHasKey(true);
+      loadBranding();
+    }
+  };
+
+  const handleOpenKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      setHasKey(true);
+      loadBranding();
+    }
+  };
 
   const loadBranding = async () => {
     try {
@@ -41,11 +63,59 @@ const App: React.FC = () => {
       setConfig(prev => ({ ...prev, backgroundImage: imageUrl }));
     } catch (error: any) {
       console.error("이미지 생성 에러:", error);
-      alert("배경을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
+      const errorMessage = error.message || "";
+      
+      if (errorMessage.includes("Requested entity was not found") || errorMessage.includes("API Key Project Not Found")) {
+        alert("선택된 API 키가 유효하지 않거나 유료 프로젝트에 연결되어 있지 않습니다. 키를 다시 선택해주세요.");
+        setHasKey(false);
+      } else if (errorMessage.includes("Model Refusal")) {
+        alert(`AI가 이미지를 생성할 수 없습니다: ${errorMessage}`);
+      } else {
+        alert(`배경 생성 중 오류가 발생했습니다: ${errorMessage || "다시 시도해주세요."}`);
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  if (hasKey === false) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
+        <div className="max-w-md w-full space-y-8 p-12 bg-slate-900 border border-white/10 rounded-[3rem] shadow-2xl">
+          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(79,70,229,0.4)] mb-8">
+            <span className="text-3xl">🔑</span>
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Gemini API 키 필요</h2>
+          <p className="text-slate-400 text-sm leading-relaxed">
+            하이퍼 리얼리스틱 배경 생성을 위해 <br/>
+            <strong>유료 프로젝트(Paid Project)</strong>의 <br/>
+            Gemini API 키 연결이 반드시 필요합니다.
+          </p>
+          <div className="pt-4 space-y-4">
+            <button 
+              onClick={handleOpenKeySelector}
+              className="w-full py-4 bg-white text-slate-950 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-50 transition-all active:scale-95 shadow-xl"
+            >
+              유료 API 키 선택하기
+            </button>
+            <div className="flex flex-col gap-2">
+              <a 
+                href="https://ai.google.dev/gemini-api/docs/billing" 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-[10px] text-indigo-400 hover:text-indigo-300 underline underline-offset-4 tracking-wider"
+              >
+                결제 및 프로젝트 설정 가이드
+              </a>
+              <p className="text-[9px] text-slate-600">
+                무료 등급(Free tier) 키는 이미지 생성이 제한될 수 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
@@ -56,10 +126,10 @@ const App: React.FC = () => {
               SOFTWAVE
             </div>
             <div className="hidden xs:block">
-              <h1 className="text-xs md:text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">Studio Pro</h1>
+              <h1 className="text-xs md:text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">스튜디오 프로</h1>
               <div className="flex items-center gap-1">
                 <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[7px] md:text-[8px] text-green-500 font-bold uppercase tracking-widest">Live Engine</span>
+                <span className="text-[7px] md:text-[8px] text-green-500 font-bold uppercase tracking-widest">라이브 엔진 가동중</span>
               </div>
             </div>
           </div>
@@ -99,7 +169,7 @@ const App: React.FC = () => {
 
       <footer className="py-8 border-t border-white/5 text-center">
         <p className="text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold px-4">
-          Realistic Imaging Powered by Gemini 2.5 Image
+          Gemini 3 Pro Image 기반 초실사 이미지 엔진 탑재
         </p>
       </footer>
     </div>

@@ -49,8 +49,8 @@ export const DEFAULT_BRANDING = {
     { hex: "#6366f1", name: "꿈결 보라" }
   ],
   layouts: [
-    { id: "centered", name: "중앙 집중형", description: "제목을 중앙에 배치하여 몰입감을 줍니다." },
-    { id: "bottom-left", name: "하단 여백형", description: "배경 이미지를 강조하고 정보를 아래에 둡니다." }
+    { id: "centered", name: "중앙 집중형", description: "제목을 중앙에 배치하여 몰입감을 줍니다" },
+    { id: "bottom-left", name: "하단 여백형", description: "배경 이미지를 강조하고 정보를 아래에 둡니다" }
   ],
   copywriting: [
     "잠 못 드는 밤 당신을 위한 작은 선물",
@@ -76,4 +76,4 @@ export const DEFAULT_BRANDING = {
   ]
 };
 
-export const DEFAULT_PROMPT = "영상 테마를 입력하면 AI가 어울리는 배경을 그려줍니다.";
+export const DEFAULT_PROMPT = "영상 테마를 입력하면 AI가 어울리는 배경을 그려줍니다";

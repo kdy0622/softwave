@@ -34,60 +34,61 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
       if (!containerRef.current) return;
       
       const containerWidth = containerRef.current.offsetWidth;
-      // 캔버스의 실제 가로 크기 기준 (16:9 비율 유지)
-      const effectiveWidth = containerWidth > 0 ? containerWidth : 1280;
+      const containerHeight = containerRef.current.offsetHeight;
       
-      // 텍스트가 차지할 수 있는 최대 가로 폭 (좌우 여백 8%씩 제외한 약 84%)
-      const horizontalPadding = effectiveWidth * 0.16;
-      const maxAllowedWidth = effectiveWidth - horizontalPadding;
+      // 캔버스의 실제 너비가 없을 경우를 대비한 기본값
+      const effectiveWidth = containerWidth > 0 ? containerWidth : 1280;
+      const effectiveHeight = containerHeight > 0 ? containerHeight : (effectiveWidth * 9 / 16);
+      
+      // 텍스트가 배경을 절대 넘지 않도록 최대 가용 너비를 너비의 75%로 보수적으로 제한
+      const maxAllowedWidth = effectiveWidth * 0.75;
+      // 타이틀이 배경 높이의 40%를 넘지 않도록 제한
+      const maxAllowedHeight = effectiveHeight * 0.4;
 
-      // 타이틀 크기 조정
       if (titleRef.current) {
-        // 측정을 위해 일시적으로 스케일 초기화 및 너비 제한 해제
         titleRef.current.style.transform = 'scale(1)';
         titleRef.current.style.width = 'max-content';
+        const rect = titleRef.current.getBoundingClientRect();
+        const naturalWidth = rect.width;
+        const naturalHeight = rect.height;
         
-        const naturalWidth = titleRef.current.getBoundingClientRect().width;
-        
+        let scale = 1;
         if (naturalWidth > maxAllowedWidth && naturalWidth > 0) {
-          const newScale = maxAllowedWidth / naturalWidth;
-          setTitleScale(Math.min(1, Math.max(0.1, newScale))); 
-        } else {
-          setTitleScale(1);
+          scale = Math.min(scale, maxAllowedWidth / naturalWidth);
         }
+        if (naturalHeight > maxAllowedHeight && naturalHeight > 0) {
+          scale = Math.min(scale, maxAllowedHeight / naturalHeight);
+        }
+        
+        // 최종 스케일에 미세한 버퍼(0.98) 적용
+        setTitleScale(scale * 0.98);
       }
 
-      // 부제목 크기 조정
       if (subtitleRef.current) {
         subtitleRef.current.style.transform = 'scale(1)';
         subtitleRef.current.style.width = 'max-content';
-        
         const naturalWidth = subtitleRef.current.getBoundingClientRect().width;
-        // 부제목은 타이틀보다 조금 더 여유 있게(약 90%) 조정
-        const maxSubWidth = maxAllowedWidth * 0.95;
+        // 부제목은 타이틀보다 조금 더 안쪽으로 들어오도록 70% 제한
+        const maxSubWidth = effectiveWidth * 0.7;
         
         if (naturalWidth > maxSubWidth && naturalWidth > 0) {
-          const newScale = maxSubWidth / naturalWidth;
-          setSubtitleScale(Math.min(1, Math.max(0.2, newScale)));
+          setSubtitleScale((maxSubWidth / naturalWidth) * 0.98);
         } else {
           setSubtitleScale(1);
         }
       }
     };
 
-    // 폰트 로딩 대기 및 리사이즈 감지
     const resizeObserver = new ResizeObserver(adjustScale);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
     
-    // 즉시 실행 및 지연 실행 (폰트 적용 보장)
+    // 초기 렌더링 및 폰트 로드 후 여러 번 실행하여 정확한 크기 측정
     adjustScale();
-    const timer = setTimeout(adjustScale, 150);
-    const longTimer = setTimeout(adjustScale, 1000); // 폰트가 늦게 뜰 경우 대비
+    const timers = [50, 200, 500, 1500].map(ms => setTimeout(adjustScale, ms));
     
     return () => {
       resizeObserver.disconnect();
-      clearTimeout(timer);
-      clearTimeout(longTimer);
+      timers.forEach(clearTimeout);
     };
   }, [config.title, config.subtitle, config.fontStyle, config.backgroundImage]);
 
@@ -116,13 +117,11 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         )}
       </div>
 
-      {/* 조도(Illumination) 레이어 */}
       <div 
         className="absolute inset-0 bg-black transition-opacity z-10"
         style={{ opacity: config.overlayOpacity }}
       ></div>
       
-      {/* 가독성 보강 그라데이션 */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[11]"></div>
 
       <div className="absolute inset-0 p-[8%] flex flex-col justify-end items-start z-20 overflow-hidden">
@@ -166,10 +165,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
 
       {/* 브랜딩 워터마크 */}
       <div className="absolute top-[6%] right-[6%] flex items-center bg-black/70 backdrop-blur-lg px-4 py-2 rounded-full border border-white/10 z-30 scale-50 md:scale-[0.8] origin-right">
-        <span className="text-[10px] md:text-[11px] tracking-[0.4em] font-black text-white uppercase opacity-90 whitespace-nowrap">SOFTWAVE STUDIO PRO</span>
+        <span className="text-[10px] md:text-[11px] tracking-[0.4em] font-black text-white uppercase opacity-90 whitespace-nowrap font-sans-kr">소프트웨이브 스튜디오 프로</span>
       </div>
       
-      {/* 텍스처 오버레이 */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none mix-blend-screen bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-40"></div>
     </div>
   );

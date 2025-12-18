@@ -65,8 +65,8 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-3xl"></div>
           <div className="relative bg-slate-900 border border-white/10 rounded-[3rem] p-10 text-center shadow-[0_0_100px_rgba(99,102,241,0.2)] animate-in zoom-in duration-300 max-w-sm w-full">
             <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <h3 className="text-lg font-black text-white mb-2 uppercase tracking-tighter">Rendering Reality</h3>
-            <p className="text-slate-400 text-xs">AI가 사실적인 배경을 생성 중입니다.</p>
+            <h3 className="text-lg font-black text-white mb-2 uppercase tracking-tighter">리얼리티 렌더링 중</h3>
+            <p className="text-slate-400 text-xs">AI가 초실사 배경 이미지를 생성하고 있습니다.</p>
           </div>
         </div>
       )}
@@ -77,7 +77,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Studio Canvas</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">라이브 스튜디오 캔버스</span>
             </div>
             <button 
               onClick={handleDownload}
@@ -100,7 +100,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
         <section className="bg-gradient-to-br from-indigo-900/20 to-slate-900 border border-indigo-500/20 rounded-[2rem] p-5 shadow-xl">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-lg">🤖</span>
-            <h4 className="text-[11px] font-black text-white uppercase tracking-wider">AI Realistic Background</h4>
+            <h4 className="text-[11px] font-black text-white uppercase tracking-wider">AI 초실사 배경 생성</h4>
           </div>
           <form onSubmit={handleGenerateClick} className="space-y-3">
             <textarea 
@@ -123,7 +123,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           
           <section className="space-y-4">
              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Illumination (조도 조절)</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">배경 조도 조절</label>
                 <span className="text-[10px] font-mono text-indigo-400">{Math.round(config.overlayOpacity * 100)}%</span>
              </div>
              <input 
@@ -139,7 +139,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           <section className="space-y-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Recommended Backgrounds (10)</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">추천 배경 이미지</label>
             <div className="horizontal-presets custom-scrollbar pb-2">
               {PRESET_BACKGROUNDS.map(bg => (
                 <button 
@@ -154,7 +154,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           <section className="space-y-4">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Typography</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">타이포그래피 설정</label>
             <input 
               type="text"
               value={config.title}
@@ -176,7 +176,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           <section className="space-y-3">
-            <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest px-1">Mood Library (20 Recommendation Texts)</label>
+            <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest px-1">무드 라이브러리 (추천 문구 20개)</label>
             <div className="h-[180px] overflow-y-auto bg-slate-950/50 rounded-2xl border border-white/5 custom-scrollbar p-2 shadow-inner">
               <div className="flex flex-col gap-1">
                 {copywritingList.map((txt, i) => (
@@ -193,7 +193,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           <section className="space-y-4">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Color Grade Filters</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">색감 필터</label>
             <div className="flex flex-wrap gap-1.5">
               {FILTERS.map(f => (
                 <button 
@@ -208,7 +208,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           <section className="space-y-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Quick Icons</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">빠른 이모티콘</label>
             <div className="flex justify-between items-center bg-slate-950 p-2 rounded-2xl border border-white/5">
               {ICONS.map(i => (
                 <button 
