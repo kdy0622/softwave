@@ -10,11 +10,11 @@ const App: React.FC = () => {
   const [config, setConfig] = useState<ThumbnailConfig>({
     backgroundImage: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720',
     title: '잠 못 드는 새벽의 조각들',
-    subtitle: '깊은 숙면을 위한 로파이 비트 모음',
+    subtitle: '깊은 숙면을 위한 리얼 사운드',
     filter: '없음',
     fontStyle: 'serif',
     icon: '🌙',
-    overlayOpacity: 0.2, // 기존 0.3에서 0.2로 밝게 조정
+    overlayOpacity: 0.45, // 기본 명암 대비를 높여 가독성 즉각 확보
   });
   
   const [branding, setBranding] = useState<BrandingGuide | null>(null);
@@ -59,7 +59,7 @@ const App: React.FC = () => {
               <h1 className="text-xs md:text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">Studio Pro</h1>
               <div className="flex items-center gap-1">
                 <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[7px] md:text-[8px] text-green-500 font-bold uppercase tracking-widest">Connected</span>
+                <span className="text-[7px] md:text-[8px] text-green-500 font-bold uppercase tracking-widest">Live Engine</span>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ const App: React.FC = () => {
 
       <footer className="py-8 border-t border-white/5 text-center">
         <p className="text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold px-4">
-          Powered by Softwave Mood Engine & Unsplash
+          Realistic Imaging Powered by Gemini 2.5 Image
         </p>
       </footer>
     </div>
