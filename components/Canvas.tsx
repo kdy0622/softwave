@@ -147,9 +147,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         </div>
       </div>
 
-      {/* 4. 브랜딩 워터마크 */}
-      <div className="absolute top-[8%] right-[8%] flex items-center gap-3 bg-black/50 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 z-30">
-        <span className="text-[1.8vw] md:text-[10px] tracking-[0.4em] font-bold text-white uppercase opacity-70">SOFTWAVE STUDIO</span>
+      {/* 4. 브랜딩 워터마크 - 크기 축소 및 투명도 조정 */}
+      <div className="absolute top-[6%] right-[6%] flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/5 z-30 scale-75 md:scale-100 origin-right">
+        <span className="text-[1.2vw] md:text-[8px] tracking-[0.3em] font-bold text-white uppercase opacity-50 whitespace-nowrap">SOFTWAVE STUDIO</span>
       </div>
       
       {/* 5. 시각적 텍스처 오버레이 */}

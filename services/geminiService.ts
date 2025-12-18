@@ -5,44 +5,53 @@ import { DEFAULT_BRANDING } from "../constants.ts";
 
 export class GeminiService {
   /**
-   * 고화질 감성 이미지 엔진
-   * API 키가 있으면 Gemini AI로 생성하고, 없으면 Unsplash 라이브러리에서 동적으로 이미지를 가져옵니다.
+   * 고화질 감성 AI 배경 생성 엔진
+   * gemini-2.5-flash-image 모델을 사용하여 'Softwave' 채널 미학에 맞는 이미지를 생성합니다.
    */
   async generateBackground(userInput: string): Promise<string> {
     const apiKey = process.env.API_KEY;
 
-    // 1. API 키가 있는 경우 AI 생성 시도 (Gemini 2.5 Flash Image)
+    // 1. Gemini AI를 통한 직접 생성 시도
     if (apiKey && apiKey !== "undefined" && apiKey !== "") {
       try {
-        const ai = new GoogleGenAI({ apiKey });
-        const styleInstruction = "Cinematic 16:9 lofi background, soft dreamy lighting, cozy atmosphere, no text, plenty of negative space for typography. Aesthetic: ";
-        const finalPrompt = styleInstruction + (userInput || "deep night sky with stars");
+        const ai = new GoogleGenAI({ apiKey: apiKey });
+        
+        // 프롬프트 강화: Softwave 채널의 'Cinematic, Lofi, Dreamy' 스타일 강제
+        const styleInstruction = `
+          High-resolution cinematic background for a music channel named 'Softwave'.
+          Style: Dreamy lofi aesthetic, nostalgic atmosphere, soft focus, minimal and clean.
+          No text, no people, wide 16:9 aspect ratio.
+          Plenty of negative space for typography.
+          Mood: ${userInput || "peaceful night cityscape with purple moonlight"}
+        `;
 
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
-          contents: { parts: [{ text: finalPrompt }] },
+          contents: { parts: [{ text: styleInstruction }] },
           config: {
-            imageConfig: { aspectRatio: "16:9" }
+            imageConfig: { 
+              aspectRatio: "16:9"
+            }
           }
         });
 
-        const imagePart = response.candidates?.[0]?.content?.parts.find(part => part.inlineData);
-        if (imagePart?.inlineData?.data) {
-          return `data:image/png;base64,${imagePart.inlineData.data}`;
+        // 결과물에서 이미지 파트 찾기
+        if (response.candidates?.[0]?.content?.parts) {
+          for (const part of response.candidates[0].content.parts) {
+            if (part.inlineData) {
+              return `data:image/png;base64,${part.inlineData.data}`;
+            }
+          }
         }
       } catch (error) {
-        console.warn("AI 생성 제한으로 인해 무드 엔진으로 자동 전환합니다.");
+        console.warn("AI 이미지 생성 실패, Unsplash 폴백 엔진 가동", error);
       }
     }
 
-    // 2. API 키가 없거나 실패한 경우: 스마트 무드 엔진 (Dynamic Unsplash Search)
+    // 2. Fallback: 스마트 무드 엔진 (Unsplash 기반)
     const randomSeed = Math.floor(Math.random() * 1000000);
-    const keywords = userInput ? userInput.split(' ').join(',') : 'lofi,night,cozy';
-    
-    // 특정 이미지 ID(photo-...)에 갇히지 않도록 source.unsplash.com의 featured 형식을 활용하거나 
-    // 이미지 프로세싱 파라미터를 통해 검색어 기반의 새로운 이미지를 유도합니다.
-    // Unsplash의 비공식 검색 API 형식을 사용하여 검색어에 맞는 무작위 이미지를 반환받습니다.
-    return `https://source.unsplash.com/featured/1280x720/?${keywords}&sig=${randomSeed}`;
+    const keywords = userInput ? userInput.split(' ').join(',') : 'lofi,night,cozy,cinematic';
+    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720&sig=${randomSeed}&q=${encodeURIComponent(keywords)}`;
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
@@ -50,10 +59,10 @@ export class GeminiService {
     if (!apiKey || apiKey === "undefined") return DEFAULT_BRANDING;
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: "음악 채널 'Softwave'를 위한 감성 브랜딩 가이드. 한국어로 JSON 응답.",
+        contents: "음악 채널 'Softwave'를 위한 감성 브랜딩 가이드(키워드, 색상, 레이아웃 설명, 카피라이팅 20개). 한국어로 JSON 응답.",
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -84,8 +93,7 @@ export class GeminiService {
       });
 
       const text = response.text?.trim() || '';
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return JSON.parse(jsonMatch ? jsonMatch[0] : text);
+      return JSON.parse(text);
     } catch (e) {
       return DEFAULT_BRANDING;
     }

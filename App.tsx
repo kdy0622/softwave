@@ -52,12 +52,15 @@ const App: React.FC = () => {
       <header className="border-b border-white/5 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 text-sm md:text-base">S</div>
+            {/* S 로고 대신 SOFTWAVE 텍스트 로고 적용 */}
+            <div className="h-7 md:h-8 px-2.5 md:px-3.5 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg md:rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/20 text-[10px] md:text-[11px] tracking-tighter italic">
+              SOFTWAVE
+            </div>
             <div className="hidden xs:block">
-              <h1 className="text-sm md:text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">Softwave Studio</h1>
+              <h1 className="text-xs md:text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">Studio Pro</h1>
               <div className="flex items-center gap-1">
                 <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[8px] md:text-[9px] text-green-500 font-bold uppercase tracking-widest">Active</span>
+                <span className="text-[7px] md:text-[8px] text-green-500 font-bold uppercase tracking-widest">Connected</span>
               </div>
             </div>
           </div>
