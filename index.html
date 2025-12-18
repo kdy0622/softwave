@@ -3,12 +3,13 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>소프트웨이브 스튜디오 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Inter:wght@300;400;600&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <!-- crossorigin="anonymous"를 설정하여 캔버스 캡처 시 스타일시트 접근 에러 방지 -->
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Inter:wght@300;400;600&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" crossorigin="anonymous">
     <style>
       :root {
         --font-serif: 'Nanum Myeongjo', serif;
@@ -24,29 +25,53 @@
         color: #f8fafc;
         margin: 0;
         overflow-x: hidden;
+        -webkit-tap-highlight-color: transparent;
       }
 
-      /* 폰트 섞임 방지를 위한 명시적 클래스 설정 */
       .font-serif-kr { font-family: var(--font-serif) !important; }
       .font-sans-kr { font-family: var(--font-sans) !important; }
       .font-display-kr { font-family: var(--font-display) !important; }
       .font-rounded-kr { font-family: var(--font-rounded) !important; }
       .font-script-kr { font-family: var(--font-script) !important; }
       
-      /* 스크롤바 디자인 */
-      .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-      }
-      .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.02);
-      }
-      .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(99, 102, 241, 0.4);
-        border-radius: 10px;
-      }
+      /* 스크롤바 강제 노출 설정 (모바일에서도 가시성 확보) */
       .custom-scrollbar {
         scrollbar-width: thin;
-        scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+        scrollbar-color: #6366f1 rgba(255, 255, 255, 0.05);
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        display: block !important;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 10px;
+      }
+      
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #6366f1;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .no-select {
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      /* 모바일에서 툴바 조정 시 프리뷰가 고정되도록 하는 스타일 */
+      @media (max-width: 1024px) {
+        .sticky-preview {
+          position: sticky;
+          top: 64px; /* 헤더 높이 */
+          z-index: 40;
+          background-color: #020617;
+          padding-bottom: 12px;
+        }
       }
     </style>
     <script type="importmap">

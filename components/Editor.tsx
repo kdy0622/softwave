@@ -23,234 +23,211 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
   const handleDownload = async () => {
     if (!canvasRef.current) return;
     setIsDownloading(true);
+    
+    // 캡처 전 폰트 로딩 대기를 위한 짧은 지연
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const dataUrl = await htmlToImage.toPng(canvasRef.current, { 
-        cacheBust: true, 
-        pixelRatio: 2,
-        backgroundColor: '#020617'
+      // 유튜브 썸네일 규격: 1280x720, 2MB 이하
+      const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
+        quality: 0.85, 
+        width: 1280,
+        height: 720,
+        pixelRatio: 1, 
+        backgroundColor: '#020617',
+        cacheBust: true,
+        style: {
+          transform: 'none', // 캡처 시 변형 방지
+        }
       });
+      
       const link = document.createElement('a');
-      link.download = `softwave-${Date.now()}.png`;
+      link.download = `softwave-thumbnail-${Date.now()}.jpg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
-      alert('이미지 저장 중 오류가 발생했습니다.');
+      console.error('Download Error:', err);
+      alert('썸네일 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleSearch = () => {
-    // 배경 이미지 찾기 버튼 클릭 시 실행
-    const searchQuery = prompt.trim() || "cinematic lofi night";
+    const searchQuery = prompt.trim() || "cinematic cozy night atmosphere";
     onGenerate(searchQuery);
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* 왼쪽: 미리보기 및 이미지 생성 */}
-      <div className="lg:col-span-8 space-y-6">
-        <div className="bg-slate-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative group">
-          <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/50 backdrop-blur-sm">
+    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start mb-20">
+      {/* 프리뷰 영역: 모바일에서도 툴바 조절 시 항상 상단에 노출되도록 sticky 적용 */}
+      <div className="w-full lg:col-span-7 xl:col-span-8 space-y-4 lg:sticky lg:top-20 z-30 sticky-preview">
+        <div className="bg-slate-900 border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
+          <div className="p-3 md:p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/90 backdrop-blur-md">
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-              </span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Studio View</span>
+              <div className="flex space-x-1">
+                <span className="w-2 h-2 rounded-full bg-red-500/50"></span>
+                <span className="w-2 h-2 rounded-full bg-indigo-500/50 animate-pulse"></span>
+              </div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-2 hidden sm:inline">LIVE PREVIEW</span>
             </div>
             <button 
               onClick={handleDownload}
               disabled={isDownloading || isLoading}
-              className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
+              className="flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-lg"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              {isDownloading ? '저장 중...' : '결과물 저장'}
+              {isDownloading ? '준비 중...' : '결과물 저장'}
             </button>
           </div>
           
-          <div className="relative p-2 bg-slate-950 min-h-[300px] flex items-center justify-center">
+          <div className="relative p-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+            {/* Canvas는 1280x720 원본 비율을 유지하며 캡처됨 */}
             <Canvas ref={canvasRef} config={config} filter={activeFilter} />
             {isLoading && (
-              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-50">
-                <div className="w-14 h-14 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                <div className="text-center space-y-2">
-                  <p className="text-white font-bold text-xl tracking-tight">배경 이미지를 찾고 있습니다</p>
-                  <p className="text-slate-400 text-xs animate-pulse">최적의 무드를 검색 중입니다...</p>
-                </div>
+              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+                <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-white font-bold text-sm">무드를 검색하는 중...</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 shadow-xl">
-            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <span className="w-1 h-4 bg-indigo-500 rounded-full"></span>
-              프리셋 테마
-            </h3>
-            <div className="grid grid-cols-5 gap-2 h-[140px] overflow-y-auto pr-2 custom-scrollbar">
-              {PRESET_BACKGROUNDS.map(bg => (
-                <button 
-                  key={bg.id}
-                  onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
-                  className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-95' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                >
-                  <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
-                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white py-0.5 text-center">
-                    {bg.name}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 flex flex-col shadow-xl">
-            <h3 className="text-sm font-bold text-white mb-4 flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <span className="w-1 h-4 bg-violet-500 rounded-full"></span>
-                무드 검색 엔진
-              </span>
-              <span className="text-[8px] px-2 py-0.5 bg-green-500/10 text-green-400 rounded-full font-bold">AI Search</span>
-            </h3>
-            <div className="flex-1 flex flex-col gap-3">
-              <input 
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="분위기 키워드를 입력하세요"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-3 text-xs text-white focus:outline-none focus:border-violet-500/50 transition-all placeholder:text-slate-600"
-              />
+        {/* 배경 빠른 변경 도구 */}
+        <div className="hidden lg:flex gap-3 bg-slate-900/50 border border-white/5 rounded-2xl p-3 items-center">
+          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-2">Presets</label>
+          <div className="flex gap-2 overflow-x-auto custom-scrollbar scrollbar-hide flex-1">
+            {PRESET_BACKGROUNDS.map(bg => (
               <button 
-                onClick={handleSearch}
-                disabled={isLoading}
-                className="w-full py-4 rounded-2xl text-xs font-bold bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                key={bg.id}
+                onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
+                className={`flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90' : 'border-transparent opacity-40 hover:opacity-100'}`}
               >
-                {isLoading ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    검색 중...
-                  </>
-                ) : '배경 이미지 찾기'}
+                <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" />
               </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* 오른쪽: 디자인 컨트롤 */}
-      <div className="lg:col-span-4 h-full">
-        <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 h-[calc(100vh-160px)] flex flex-col shadow-2xl sticky top-24">
-          <div className="flex items-center justify-between mb-8 flex-shrink-0">
-            <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Toolbox</h2>
-            <button 
-              onClick={() => setConfig({ ...config, title: '새로운 이야기', subtitle: '감성을 담은 비트' })}
-              className="text-[10px] text-indigo-400 hover:text-white transition-colors"
-            >
-              초기화
-            </button>
-          </div>
+      {/* 에디터 툴박스 */}
+      <div className="w-full lg:col-span-5 xl:col-span-4 space-y-6">
+        <div className="bg-slate-900 border border-white/5 rounded-3xl p-5 md:p-7 shadow-2xl space-y-8">
           
-          <div className="flex-1 space-y-10 overflow-y-auto pr-3 custom-scrollbar">
-            {/* 타이틀 입력 */}
-            <section className="space-y-4">
-              <div className="space-y-3">
-                <input 
-                  type="text"
-                  value={config.title}
-                  onChange={(e) => setConfig({ ...config, title: e.target.value })}
-                  placeholder="메인 타이틀"
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-4 text-sm font-bold text-white focus:border-indigo-500/50 focus:outline-none"
-                />
-                <input 
-                  type="text"
-                  value={config.subtitle}
-                  onChange={(e) => setConfig({ ...config, subtitle: e.target.value })}
-                  placeholder="서브 타이틀"
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[11px] text-slate-400 focus:border-indigo-500/50 focus:outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {FONT_OPTIONS.map((font) => (
-                  <button 
-                    key={font.id}
-                    onClick={() => setConfig({ ...config, fontStyle: font.id })}
-                    className={`py-3 text-[10px] rounded-xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'} ${font.class}`}
-                  >
-                    {font.name}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* 무드 라이브러리: 항상 고정된 높이와 강제 스크롤바 유지 */}
-            <section className="flex flex-col">
-              <div className="flex items-center justify-between mb-4 flex-shrink-0">
-                <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Mood Library (20)</label>
-              </div>
-              <div 
-                className="h-[320px] overflow-y-scroll custom-scrollbar bg-slate-950/50 rounded-2xl border border-white/5"
-                style={{ scrollBehavior: 'smooth' }}
+          {/* 1. 배경 생성 */}
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">AI Background Engine</label>
+            <div className="flex gap-2">
+              <input 
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="어떤 분위기의 배경을 원하시나요?"
+                className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[12px] text-white focus:outline-none focus:border-indigo-500/50"
+              />
+              <button 
+                onClick={handleSearch}
+                disabled={isLoading}
+                className="px-4 py-3 rounded-xl text-[12px] font-bold bg-white/5 text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95"
               >
-                <div className="grid grid-cols-1 gap-2 p-2">
-                  {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
-                    <button 
-                      key={i}
-                      onClick={() => setConfig({ ...config, title: txt })}
-                      className={`group text-left text-[11px] p-4 border rounded-xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-400 hover:text-white hover:border-indigo-500/30'}`}
-                    >
-                      <span className={`mr-2 transition-colors ${config.title === txt ? 'text-indigo-300' : 'opacity-40 group-hover:opacity-100 group-hover:text-indigo-400'}`}>#</span>
-                      {txt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
+                생성
+              </button>
+            </div>
+          </section>
 
-            {/* 나머지 컨트롤 */}
-            <section className="space-y-8 pb-4">
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 block">Atmosphere Filter</label>
-                <div className="flex flex-wrap gap-2">
-                  {FILTERS.map(f => (
-                    <button 
-                      key={f.name}
-                      onClick={() => setConfig({ ...config, filter: f.name })}
-                      className={`px-4 py-2 text-[10px] rounded-full border transition-all ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'}`}
-                    >
-                      {f.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {/* 2. 타이포그래피 */}
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Typography & Content</label>
+            <div className="space-y-2">
+              <input 
+                type="text"
+                value={config.title}
+                onChange={(e) => setConfig({ ...config, title: e.target.value })}
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-4 text-sm font-bold text-white focus:border-indigo-500/50 focus:outline-none"
+                placeholder="메인 타이틀"
+              />
+              <input 
+                type="text"
+                value={config.subtitle}
+                onChange={(e) => setConfig({ ...config, subtitle: e.target.value })}
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[11px] text-slate-400 focus:border-indigo-500/50 focus:outline-none"
+                placeholder="서브 타이틀"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {FONT_OPTIONS.map((font) => (
+                <button 
+                  key={font.id}
+                  onClick={() => setConfig({ ...config, fontStyle: font.id })}
+                  className={`py-3 text-[10px] rounded-xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'} ${font.class}`}
+                >
+                  {font.name}
+                </button>
+              ))}
+            </div>
+          </section>
 
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Dimmer Control</label>
-                  <span className="text-[10px] font-mono text-indigo-400">{Math.round(config.overlayOpacity * 100)}%</span>
-                </div>
-                <input 
-                  type="range" min="0" max="0.8" step="0.01"
-                  value={config.overlayOpacity}
-                  onChange={(e) => setConfig({ ...config, overlayOpacity: parseFloat(e.target.value) })}
-                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
-              </div>
-
-              <div className="flex justify-center gap-3 bg-slate-950 p-4 rounded-2xl border border-white/5">
-                {ICONS.map(i => (
+          {/* 3. 무드 라이브러리 (스크롤 고정 수정) */}
+          <section className="flex flex-col space-y-3">
+            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Library Selection</label>
+            <div 
+              className="h-[280px] md:h-[340px] overflow-y-scroll bg-slate-950 rounded-2xl border border-white/10 custom-scrollbar shadow-inner"
+            >
+              <div className="flex flex-col p-2 gap-1.5">
+                {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
                   <button 
-                    key={i.id}
-                    onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                    className={`w-12 h-12 flex items-center justify-center rounded-2xl border text-xl transition-all ${config.icon === i.emoji ? 'bg-white border-white scale-110 shadow-xl' : 'bg-slate-900 border-white/5 hover:bg-slate-800'}`}
+                    key={i}
+                    onClick={() => setConfig({ ...config, title: txt })}
+                    className={`text-left text-[11px] p-4 border rounded-xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-slate-900 border-transparent text-slate-400 hover:border-white/10 hover:text-white'}`}
                   >
-                    {i.emoji}
+                    <span className="opacity-40 mr-2 text-[9px]">#</span>{txt}
                   </button>
                 ))}
               </div>
-            </section>
-          </div>
+            </div>
+          </section>
+
+          {/* 4. 비주얼 제어 */}
+          <section className="space-y-6 pb-4">
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 block">Atmosphere Filters</label>
+              <div className="flex flex-wrap gap-2">
+                {FILTERS.map(f => (
+                  <button 
+                    key={f.name}
+                    onClick={() => setConfig({ ...config, filter: f.name })}
+                    className={`px-4 py-2 text-[10px] rounded-xl border transition-all ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-slate-950 border-white/5 text-slate-500'}`}
+                  >
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Darkness</label>
+                <span className="text-[10px] font-mono text-indigo-400">{Math.round(config.overlayOpacity * 100)}%</span>
+              </div>
+              <input 
+                type="range" min="0" max="0.8" step="0.01"
+                value={config.overlayOpacity}
+                onChange={(e) => setConfig({ ...config, overlayOpacity: parseFloat(e.target.value) })}
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+              />
+            </div>
+
+            <div className="flex justify-around bg-slate-950 p-3 rounded-2xl border border-white/5">
+              {ICONS.map(i => (
+                <button 
+                  key={i.id}
+                  onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
+                  className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${config.icon === i.emoji ? 'bg-white text-2xl scale-110 shadow-xl' : 'bg-transparent text-lg opacity-30 hover:opacity-100'}`}
+                >
+                  {i.emoji}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>
