@@ -28,11 +28,16 @@ export const ICONS = [
 ];
 
 export const PRESET_BACKGROUNDS = [
-  { id: 'midnight', url: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720', name: '심야의 별빛' },
-  { id: 'rainy', url: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&q=80&w=1280&h=720', name: '창밖의 빗줄기' },
-  { id: 'cafe', url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=1280&h=720', name: '조용한 카페' },
-  { id: 'ocean', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1280&h=720', name: '잔잔한 파도' },
-  { id: 'sunset', url: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=1280&h=720', name: '노을진 들판' },
+  { id: 'midnight', url: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720', name: '심야' },
+  { id: 'rainy', url: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&q=80&w=1280&h=720', name: '우천' },
+  { id: 'cafe', url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=1280&h=720', name: '카페' },
+  { id: 'ocean', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=1280&h=720', name: '파도' },
+  { id: 'sunset', url: 'https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&q=80&w=1280&h=720', name: '노을' },
+  { id: 'forest', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1280&h=720', name: '숲속' },
+  { id: 'snow', url: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80&w=1280&h=720', name: '설원' },
+  { id: 'city', url: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&q=80&w=1280&h=720', name: '도시' },
+  { id: 'library', url: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=1280&h=720', name: '서재' },
+  { id: 'window', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=1280&h=720', name: '창가' },
 ];
 
 export const DEFAULT_BRANDING = {
@@ -52,7 +57,22 @@ export const DEFAULT_BRANDING = {
     "조용히 흐르는 새벽의 멜로디",
     "지친 하루 끝에 만나는 따뜻한 위로",
     "오늘밤, 깊은 꿈속으로 여행을 떠나요",
-    "고요한 숲속의 빗소리 ASMR"
+    "고요한 숲속의 빗소리 ASMR",
+    "새벽 3시, 나만 알고 싶은 음악들",
+    "마음이 차분해지는 몽환적인 밤",
+    "어지러운 생각을 잠재우는 선율",
+    "창밖 빗소리와 어울리는 로파이",
+    "내일이 두렵지 않은 편안한 휴식",
+    "달빛 아래서 읽는 한 권의 시",
+    "별이 쏟아지는 밤의 연주곡",
+    "깊은 바다 속을 유영하는 기분",
+    "오직 당신만을 위한 수면 가이드",
+    "잊고 있던 감성을 깨우는 시간",
+    "서늘한 공기, 따뜻한 차 한 잔",
+    "꿈의 가장자리에서 부르는 노래",
+    "지친 영혼을 달래는 새벽 안개",
+    "아무도 모르게 흘리는 위로의 눈물",
+    "새벽이 지나가면 만날 수 있는 희망"
   ]
 };
 
