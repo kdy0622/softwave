@@ -34,7 +34,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       });
       
       const link = document.createElement('a');
-      link.download = `softwave-studio-${Date.now()}.jpg`;
+      link.download = `softwave-${Date.now()}.jpg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -45,10 +45,9 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     }
   };
 
-  const handleGenerateClick = () => {
-    const query = prompt.trim();
-    // 로딩 상태 시작 및 생성 호출
-    onGenerate(query || "lofi dreamy night");
+  const handleGenerateClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onGenerate(prompt.trim());
   };
 
   const baseCopy = branding?.copywriting || DEFAULT_BRANDING.copywriting;
@@ -62,20 +61,20 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md"></div>
           <div className="relative bg-slate-900 border border-white/10 rounded-[2.5rem] p-12 max-w-sm w-full text-center shadow-[0_0_80px_rgba(99,102,241,0.3)] animate-in zoom-in duration-300">
-            <div className="relative w-20 h-20 mx-auto mb-8">
+            <div className="relative w-16 h-16 mx-auto mb-8">
               <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-3xl">✨</div>
+              <div className="absolute inset-0 flex items-center justify-center text-2xl">🪄</div>
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">감성 배경 생성 중</h3>
+            <h3 className="text-xl font-bold text-white mb-2">배경 찾는 중...</h3>
             <p className="text-slate-400 text-sm leading-relaxed">
-              분위기에 딱 맞는 배경을<br/>자동으로 찾고 있습니다.
+              최적의 감성 이미지를<br/>자동으로 가져오고 있습니다.
             </p>
           </div>
         </div>
       )}
 
-      {/* 1. 프리뷰 영역 (반응형 Sticky) */}
+      {/* 1. 프리뷰 영역 */}
       <div className="w-full lg:col-span-7 xl:col-span-8 sticky-preview">
         <div className="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
           <div className="p-3 md:p-5 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
@@ -84,14 +83,14 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.6)]"></div>
                 <div className="w-2.5 h-2.5 rounded-full bg-slate-800"></div>
               </div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Preview Mode</span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-2">Preview</span>
             </div>
             <button 
               onClick={handleDownload}
               disabled={isDownloading || isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
+              className="px-5 py-2.5 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl"
             >
-              {isDownloading ? '처리 중...' : '이미지 내려받기'}
+              {isDownloading ? '저장 중' : '이미지 저장'}
             </button>
           </div>
           
@@ -110,7 +109,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             <div className="w-10 h-10 bg-indigo-600/20 rounded-xl flex items-center justify-center text-xl">🪄</div>
             <div>
               <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">AI Smart Creator</label>
-              <p className="text-[11px] text-slate-500">원하는 분위기를 키워드로 적어보세요</p>
+              <p className="text-[11px] text-slate-500">원하는 테마를 입력하고 배경을 만드세요</p>
             </div>
           </div>
           
@@ -127,15 +126,31 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               disabled={isLoading}
               className="w-full py-4.5 rounded-2xl text-sm font-black bg-indigo-600 text-white hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-indigo-950/40 border border-white/10"
             >
-              AI 감성 배경 생성
+              배경 만들기
             </button>
-            <p className="text-[9px] text-slate-600 text-center uppercase tracking-tighter">API 키 없이도 자동으로 최적의 배경을 매칭합니다</p>
+            <p className="text-[9px] text-slate-600 text-center uppercase tracking-tighter">API 키 없이도 지능형 매칭을 통해 즉시 배경을 변경합니다</p>
           </div>
         </section>
 
         {/* 편집 컨트롤 패널 */}
-        <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-6 md:p-8 shadow-2xl space-y-12">
+        <div className="bg-slate-900 border border-white/5 rounded-[3rem] p-6 md:p-8 shadow-2xl space-y-10">
           
+          {/* 라이브러리 프리셋 (10개 복구됨) */}
+          <section className="space-y-4">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block px-1">Library Presets</label>
+            <div className="horizontal-presets custom-scrollbar pb-2">
+              {PRESET_BACKGROUNDS.map(bg => (
+                <button 
+                  key={bg.id}
+                  onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
+                  className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90 ring-4 ring-indigo-500/10' : 'border-transparent opacity-40 hover:opacity-100'}`}
+                >
+                  <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* 타이포그래피 */}
           <section className="space-y-6">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block px-1">Typography</label>
@@ -144,7 +159,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 type="text"
                 value={config.title}
                 onChange={(e) => setConfig({ ...config, title: e.target.value })}
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4.5 text-base font-bold text-white focus:border-indigo-500/50 focus:outline-none transition-all shadow-inner"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-6 py-4 text-base font-bold text-white focus:border-indigo-500/50 focus:outline-none transition-all shadow-inner"
                 placeholder="메인 제목 입력"
               />
               <div className="grid grid-cols-2 gap-3">
@@ -152,7 +167,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                   <button 
                     key={font.id}
                     onClick={() => setConfig({ ...config, fontStyle: font.id })}
-                    className={`py-4 text-[11px] rounded-2xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-xl scale-[1.03] z-10' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-slate-300'}`}
+                    className={`py-3.5 text-[11px] rounded-2xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-xl scale-[1.03]' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-slate-300'}`}
                   >
                     <span className={font.class}>{font.name}</span>
                   </button>
@@ -161,19 +176,16 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 무드 카피 라이브러리 (스크롤) */}
+          {/* 무드 카피 라이브러리 */}
           <section className="space-y-4">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Library</label>
-              <span className="text-[9px] font-mono text-slate-600">20 OPTIONS</span>
-            </div>
-            <div className="h-[280px] overflow-y-auto bg-slate-950/50 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner p-3">
+            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block px-1">Mood Library</label>
+            <div className="h-[250px] overflow-y-auto bg-slate-950/50 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner p-3">
               <div className="flex flex-col gap-2">
                 {displayCopywriting.map((txt, i) => (
                   <button 
                     key={i}
                     onClick={() => setConfig({ ...config, title: txt })}
-                    className={`text-left text-[11px] p-4.5 border rounded-2xl transition-all ${config.title === txt ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-100' : 'bg-slate-900/50 border-transparent text-slate-500 hover:bg-slate-800'}`}
+                    className={`text-left text-[11px] p-4 border rounded-xl transition-all ${config.title === txt ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-100' : 'bg-slate-900/50 border-transparent text-slate-500 hover:bg-slate-800'}`}
                   >
                     <span className="opacity-30 mr-3 text-[9px] font-mono">#{String(i+1).padStart(2, '0')}</span>
                     {txt}
@@ -184,7 +196,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
           </section>
 
           {/* 비주얼 옵션 */}
-          <section className="space-y-10 pb-4">
+          <section className="space-y-8 pb-4">
             <div>
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 block px-1">Visual Filters</label>
               <div className="flex flex-wrap gap-2">
@@ -200,13 +212,13 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               </div>
             </div>
 
-            {/* 이모티콘 선택 바 (모바일 크기 최적화) */}
-            <div className="flex justify-between bg-slate-950 p-2 md:p-4 rounded-[1.2rem] md:rounded-[2.2rem] border border-white/5 shadow-inner">
+            {/* 이모티콘 선택 바 */}
+            <div className="flex justify-between items-center bg-slate-950 p-2 md:p-4 rounded-[1.2rem] md:rounded-[2.2rem] border border-white/5 shadow-inner">
               {ICONS.map(i => (
                 <button 
                   key={i.id}
                   onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                  className={`w-9 h-9 md:w-14 md:h-14 flex items-center justify-center rounded-xl md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-lg md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-base md:text-2xl opacity-15 hover:opacity-100 hover:scale-110'}`}
+                  className={`w-8 h-8 md:w-14 md:h-14 flex items-center justify-center rounded-lg md:rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-base md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-sm md:text-2xl opacity-20 hover:opacity-100 hover:scale-110'}`}
                 >
                   {i.emoji}
                 </button>

@@ -5,67 +5,68 @@ import { DEFAULT_BRANDING } from "../constants.ts";
 
 export class GeminiService {
   /**
-   * 자동 배경 생성 엔진 (AI + Smart Search)
-   * API 키가 있으면 Gemini를 사용하고, 없으면 키워드 기반 고화질 소스를 반환합니다.
+   * 감성 배경 생성 엔진 (AI + Smart Mood Engine v3)
+   * API 키가 없어도 무조건 고화질 이미지를 반환합니다.
    */
   async generateBackground(userInput: string): Promise<string> {
     const apiKey = process.env.API_KEY;
-    const prompt = userInput.trim() || "peaceful night lofi atmosphere";
+    const cleanPrompt = (userInput || "").trim().toLowerCase();
 
-    // 1. Gemini AI 시도 (API 키가 유효한 경우)
-    if (apiKey && apiKey !== "undefined" && apiKey.length > 10) {
+    // 1. Gemini AI 시도 (API 키가 유효할 때만)
+    if (apiKey && apiKey !== "undefined" && apiKey.length > 15) {
       try {
         const ai = new GoogleGenAI({ apiKey });
-        const styleInstruction = `
-          High-resolution 16:9 cinematic background for 'Softwave' music channel.
-          Theme: ${prompt}.
-          Style: Dreamy lofi, nostalgic, soft focus, minimal, no text, no people.
-          High quality, atmospheric.
-        `;
-
         const response = await ai.models.generateContent({
           model: 'gemini-2.5-flash-image',
-          contents: { parts: [{ text: styleInstruction }] },
-          config: {
-            imageConfig: { aspectRatio: "16:9" }
-          }
+          contents: { parts: [{ text: `16:9 cinematic lofi background, aesthetic, dreamy: ${cleanPrompt}` }] },
+          config: { imageConfig: { aspectRatio: "16:9" } }
         });
 
-        if (response.candidates?.[0]?.content?.parts) {
-          for (const part of response.candidates[0].content.parts) {
-            if (part.inlineData) {
-              return `data:image/png;base64,${part.inlineData.data}`;
-            }
-          }
+        const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        if (part?.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
         }
-      } catch (error) {
-        console.error("AI Generation failed, switching to Smart Search:", error);
+      } catch (e) {
+        console.warn("Gemini failing, using Mood Engine...");
       }
     }
 
-    // 2. 자동 검색 엔진 (무료/API 키 미입력 시)
-    // 사용자의 입력어를 기반으로 가장 감성적인 고화질 이미지를 즉시 매칭합니다.
-    return this.fetchAtmosphericImage(prompt);
-  }
+    // 2. 무적의 무드 엔진 (API 키 없이도 100% 작동)
+    const moodPool: Record<string, string[]> = {
+      rain: ["1515694346937-94d85e41e6f0", "1534274988757-a28bf1f539cf", "1428592953211-077101b2021b", "1519692933481-e162a57d6721"],
+      night: ["1516339901601-2e1b62dc0c45", "1477959858617-67f85cf4f1df", "1506744038136-46273834b3fb", "1483706600675-2b47a8b47e9e"],
+      ocean: ["1507525428034-b723cf961d3e", "1505118380757-91f5f45d2927", "1473116763249-2faaef81ccda", "1500375592092-40eb2168fd21"],
+      cafe: ["1554118811-1e0d58224f24", "1495474472287-4d71bcdd2085", "1509042239860-f550ce710b93", "1445116572660-236099ec97a0"],
+      sunset: ["1470252649378-9c29740c9fa8", "1490750967868-888a51510b80", "1475924156734-496f6cac6ec1", "1501418619847-2425816fed16"],
+      city: ["1477322524744-039f34d792ec", "1514565132033-8a9ba4675a3e", "1444723121867-7a241cacace9", "1519500534145-25272a744ef0"],
+      general: [
+        "1516339901601-2e1b62dc0c45", "1515694346937-94d85e41e6f0", "1554118811-1e0d58224f24",
+        "1507525428034-b723cf961d3e", "1470252649378-9c29740c9fa8", "1441974231531-c6227db76b6e"
+      ]
+    };
 
-  private fetchAtmosphericImage(prompt: string): string {
-    const randomSeed = Math.floor(Math.random() * 1000);
-    // 검색 품질을 높이기 위해 감성 키워드를 조합합니다.
-    const searchKeywords = `${prompt},lofi,cinematic,aesthetic,night,cozy`.replace(/\s+/g, ',');
-    
-    // Unsplash의 고화질 이미지 소스를 사용하며, 시드값을 주어 매번 다른 결과가 나오게 합니다.
-    return `https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=85&w=1280&h=720&sig=${randomSeed}&search=${encodeURIComponent(searchKeywords)}`;
+    let selectedPool = moodPool.general;
+    if (cleanPrompt.includes("비") || cleanPrompt.includes("rain")) selectedPool = moodPool.rain;
+    else if (cleanPrompt.includes("밤") || cleanPrompt.includes("night")) selectedPool = moodPool.night;
+    else if (cleanPrompt.includes("바다") || cleanPrompt.includes("ocean")) selectedPool = moodPool.ocean;
+    else if (cleanPrompt.includes("카페") || cleanPrompt.includes("cafe")) selectedPool = moodPool.cafe;
+    else if (cleanPrompt.includes("노을") || cleanPrompt.includes("sunset")) selectedPool = moodPool.sunset;
+    else if (cleanPrompt.includes("도시") || cleanPrompt.includes("city")) selectedPool = moodPool.city;
+
+    const randomId = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+    // sig 값을 주어 매번 새로운 랜덤 이미지가 로드되도록 함
+    return `https://images.unsplash.com/photo-${randomId}?auto=format&fit=crop&q=85&w=1280&h=720&sig=${Math.random()}`;
   }
 
   async fetchBrandingGuide(): Promise<BrandingGuide> {
     const apiKey = process.env.API_KEY;
-    if (!apiKey || apiKey === "undefined" || apiKey.length < 10) return DEFAULT_BRANDING;
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.length < 15) return DEFAULT_BRANDING;
 
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: "음악 채널 'Softwave'를 위한 감성 브랜딩 가이드(키워드, 색상, 레이아웃 설명, 카피라이팅 20개). 한국어로 JSON 응답.",
+        contents: "음악 채널 'Softwave'를 위한 감성 브랜딩 가이드. JSON 형식 응답.",
         config: {
           responseMimeType: "application/json",
           responseSchema: {
