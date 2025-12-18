@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { GeminiService } from './services/geminiService';
-import { ThumbnailConfig, BrandingGuide, AppTab } from './types';
-import Editor from './components/Editor';
-import BrandingGuideView from './components/BrandingGuideView';
-import { DEFAULT_PROMPT } from './constants';
+import { GeminiService } from './services/geminiService.ts';
+import { ThumbnailConfig, BrandingGuide, AppTab } from './types.ts';
+import Editor from './components/Editor.tsx';
+import BrandingGuideView from './components/BrandingGuideView.tsx';
+import { DEFAULT_PROMPT } from './constants.ts';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>('editor');
   const [config, setConfig] = useState<ThumbnailConfig>({
-    backgroundImage: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?q=80&w=1280&h=720&auto=format&fit=crop',
+    backgroundImage: 'https://images.unsplash.com/photo-1516339901601-2e1b62dc0c45?auto=format&fit=crop&q=80&w=1280&h=720',
     title: '잠 못 드는 새벽의 조각들',
     subtitle: '깊은 숙면을 위한 로파이 비트 모음',
     filter: '없음',
@@ -20,7 +20,7 @@ const App: React.FC = () => {
   
   const [branding, setBranding] = useState<BrandingGuide | null>(null);
   const [loading, setLoading] = useState(false);
-  const gemini = new GeminiService();
+  const [gemini] = useState(() => new GeminiService());
 
   useEffect(() => {
     loadBranding();
@@ -50,7 +50,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -74,7 +73,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-auto bg-slate-950">
         <div className="max-w-7xl mx-auto p-6">
           {activeTab === 'editor' ? (
@@ -91,7 +89,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-900 p-4 text-center text-slate-600 text-xs">
         &copy; 2024 Softwave 브랜딩 스튜디오 • Powered by Gemini AI
       </footer>

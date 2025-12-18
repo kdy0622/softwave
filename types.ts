@@ -6,12 +6,14 @@ export interface BrandingGuide {
   copywriting: string[];
 }
 
+export type FontStyle = 'serif' | 'sans' | 'display' | 'rounded' | 'script';
+
 export interface ThumbnailConfig {
   backgroundImage: string | null;
   title: string;
   subtitle: string;
   filter: string;
-  fontStyle: 'serif' | 'sans';
+  fontStyle: FontStyle;
   icon: string | null;
   overlayOpacity: number;
 }
