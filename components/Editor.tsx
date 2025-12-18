@@ -24,7 +24,6 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     if (!canvasRef.current) return;
     setIsDownloading(true);
     try {
-      // 렌더링 안정성을 위해 미세한 지연
       await new Promise(resolve => setTimeout(resolve, 300));
       const dataUrl = await htmlToImage.toPng(canvasRef.current, { 
         cacheBust: true, 
@@ -40,6 +39,12 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     } finally {
       setIsDownloading(false);
     }
+  };
+
+  const handleSearch = () => {
+    // 배경 이미지 찾기 버튼 클릭 시 실행
+    const searchQuery = prompt.trim() || "cinematic lofi night";
+    onGenerate(searchQuery);
   };
 
   return (
@@ -65,12 +70,15 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </button>
           </div>
           
-          <div className="relative p-2 bg-slate-950">
+          <div className="relative p-2 bg-slate-950 min-h-[300px] flex items-center justify-center">
             <Canvas ref={canvasRef} config={config} filter={activeFilter} />
             {isLoading && (
-              <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-md flex flex-col items-center justify-center z-50">
-                <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-white font-bold text-sm tracking-widest animate-pulse">무드 이미지를 찾는 중...</p>
+              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center z-50">
+                <div className="w-14 h-14 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                <div className="text-center space-y-2">
+                  <p className="text-white font-bold text-xl tracking-tight">배경 이미지를 찾고 있습니다</p>
+                  <p className="text-slate-400 text-xs animate-pulse">최적의 무드를 검색 중입니다...</p>
+                </div>
               </div>
             )}
           </div>
@@ -104,22 +112,27 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 <span className="w-1 h-4 bg-violet-500 rounded-full"></span>
                 무드 검색 엔진
               </span>
-              <span className="text-[8px] px-2 py-0.5 bg-green-500/10 text-green-400 rounded-full font-bold">Free</span>
+              <span className="text-[8px] px-2 py-0.5 bg-green-500/10 text-green-400 rounded-full font-bold">AI Search</span>
             </h3>
             <div className="flex-1 flex flex-col gap-3">
               <input 
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && onGenerate(prompt || "lofi room rain")}
-                placeholder="어떤 분위기를 원하시나요?"
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-3 text-xs text-white focus:outline-none focus:border-violet-500/50 transition-all"
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="분위기 키워드를 입력하세요"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-3 text-xs text-white focus:outline-none focus:border-violet-500/50 transition-all placeholder:text-slate-600"
               />
               <button 
-                onClick={() => onGenerate(prompt || "lofi night sky")}
+                onClick={handleSearch}
                 disabled={isLoading}
-                className="w-full py-4 rounded-2xl text-xs font-bold bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg active:scale-95 transition-all disabled:opacity-50"
+                className="w-full py-4 rounded-2xl text-xs font-bold bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isLoading ? '검색 중...' : '배경 이미지 찾기'}
+                {isLoading ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    검색 중...
+                  </>
+                ) : '배경 이미지 찾기'}
               </button>
             </div>
           </div>
@@ -129,7 +142,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
       {/* 오른쪽: 디자인 컨트롤 */}
       <div className="lg:col-span-4 h-full">
         <div className="bg-slate-900 border border-white/5 rounded-3xl p-6 h-[calc(100vh-160px)] flex flex-col shadow-2xl sticky top-24">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 flex-shrink-0">
             <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Toolbox</h2>
             <button 
               onClick={() => setConfig({ ...config, title: '새로운 이야기', subtitle: '감성을 담은 비트' })}
@@ -171,22 +184,27 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               </div>
             </section>
 
-            {/* 무드 라이브러리 (20개 문구 스크롤 선택 영역) */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
+            {/* 무드 라이브러리: 항상 고정된 높이와 강제 스크롤바 유지 */}
+            <section className="flex flex-col">
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Mood Library (20)</label>
               </div>
-              <div className="grid grid-cols-1 gap-2 max-h-[320px] overflow-y-auto custom-scrollbar pr-3 bg-slate-950/50 rounded-2xl p-2 border border-white/5">
-                {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
-                  <button 
-                    key={i}
-                    onClick={() => setConfig({ ...config, title: txt })}
-                    className={`group text-left text-[11px] p-4 border rounded-xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-400 hover:text-white hover:border-indigo-500/30'}`}
-                  >
-                    <span className={`mr-2 transition-colors ${config.title === txt ? 'text-indigo-300' : 'opacity-40 group-hover:opacity-100 group-hover:text-indigo-400'}`}>#</span>
-                    {txt}
-                  </button>
-                ))}
+              <div 
+                className="h-[320px] overflow-y-scroll custom-scrollbar bg-slate-950/50 rounded-2xl border border-white/5"
+                style={{ scrollBehavior: 'smooth' }}
+              >
+                <div className="grid grid-cols-1 gap-2 p-2">
+                  {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
+                    <button 
+                      key={i}
+                      onClick={() => setConfig({ ...config, title: txt })}
+                      className={`group text-left text-[11px] p-4 border rounded-xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-400 hover:text-white hover:border-indigo-500/30'}`}
+                    >
+                      <span className={`mr-2 transition-colors ${config.title === txt ? 'text-indigo-300' : 'opacity-40 group-hover:opacity-100 group-hover:text-indigo-400'}`}>#</span>
+                      {txt}
+                    </button>
+                  ))}
+                </div>
               </div>
             </section>
 
