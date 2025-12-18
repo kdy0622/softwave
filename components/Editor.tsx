@@ -30,11 +30,11 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     try {
       /**
        * 고화질 원본 크기 저장 로직
-       * 인위적인 너비/높이 제한을 제거하고 pixelRatio를 높여 '전체화면' 수준의 고해상도 이미지를 생성합니다.
+       * pixelRatio를 높여 고해상도 캡처를 수행합니다.
        */
       const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
         quality: 1.0,
-        pixelRatio: 2, // 2배 고해상도 캡처
+        pixelRatio: 2, 
         backgroundColor: '#020617',
         cacheBust: true,
         style: {
@@ -63,6 +63,9 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     const searchQuery = prompt.trim() || "cinematic cozy lofi atmosphere";
     onGenerate(searchQuery);
   };
+
+  // 무드 카피 라이브러리 데이터를 정확히 20개로 제한
+  const displayCopywriting = (branding?.copywriting || DEFAULT_BRANDING.copywriting).slice(0, 20);
 
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-12 items-start mb-24">
@@ -121,7 +124,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
         {/* 편집 컨트롤러 카드 */}
         <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-6 md:p-8 shadow-2xl space-y-12">
           
-          {/* 타이포그래피 설정 (모바일 최적화) */}
+          {/* 타이포그래피 설정 */}
           <section className="space-y-6">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block whitespace-nowrap">Typography</label>
             <div className="space-y-3">
@@ -153,18 +156,18 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 무드 라이브러리 (항상 스크롤바 유지) */}
+          {/* 무드 라이브러리 (항상 스크롤바 유지 및 20개 고정) */}
           <section className="flex flex-col space-y-4">
             <div className="flex justify-between items-center px-1">
               <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest whitespace-nowrap">Mood Copy Library</label>
-              <span className="text-[9px] text-slate-600 font-mono hidden xs:block">20 SAMPLES</span>
+              <span className="text-[9px] text-slate-600 font-mono hidden xs:block">{displayCopywriting.length} SAMPLES</span>
             </div>
             <div 
-              className="h-[320px] overflow-y-scroll bg-slate-950 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner"
+              className="h-[320px] bg-slate-950 rounded-[2rem] border border-white/5 shadow-inner custom-scrollbar"
               style={{ display: 'block' }}
             >
               <div className="flex flex-col p-3 gap-2">
-                {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
+                {displayCopywriting.map((txt, i) => (
                   <button 
                     key={i}
                     onClick={() => setConfig({ ...config, title: txt })}
