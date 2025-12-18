@@ -40,7 +40,8 @@ const App: React.FC = () => {
       const imageUrl = await gemini.generateBackground(prompt);
       setConfig(prev => ({ ...prev, backgroundImage: imageUrl }));
     } catch (error: any) {
-      alert("AI 이미지 생성 중 일시적인 오류가 발생했습니다. 잠시 후 다시 시도하거나 프리셋을 이용해 주세요.");
+      console.error("이미지 생성 에러:", error);
+      alert("배경을 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -52,44 +53,52 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">S</div>
-            <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Softwave Studio</h1>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Softwave Studio</h1>
+              <div className="flex items-center gap-1">
+                <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="text-[9px] text-green-500 font-bold uppercase tracking-widest">Free Mode Active</span>
+              </div>
+            </div>
           </div>
           
-          <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
-            <button 
-              onClick={() => setActiveTab('editor')}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'editor' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
-            >
-              에디터
-            </button>
-            <button 
-              onClick={() => setActiveTab('branding')}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'branding' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
-            >
-              브랜딩 전략
-            </button>
-          </nav>
+          <div className="flex items-center gap-6">
+            <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
+              <button 
+                onClick={() => setActiveTab('editor')}
+                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'editor' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
+              >
+                에디터
+              </button>
+              <button 
+                onClick={() => setActiveTab('branding')}
+                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'branding' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
+              >
+                브랜딩 가이드
+              </button>
+            </nav>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto p-6 md:p-8">
-          {activeTab === 'editor' ? (
-            <Editor 
-              config={config} 
-              setConfig={setConfig} 
-              onGenerate={handleGenerateImage}
-              isLoading={loading}
-              branding={branding}
-            />
-          ) : (
-            <BrandingGuideView branding={branding} isLoading={!branding} />
-          )}
-        </div>
+      <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
+        {activeTab === 'editor' ? (
+          <Editor 
+            config={config} 
+            setConfig={setConfig} 
+            onGenerate={handleGenerateImage}
+            isLoading={loading}
+            branding={branding}
+          />
+        ) : (
+          <BrandingGuideView branding={branding} isLoading={!branding} />
+        )}
       </main>
 
-      <footer className="p-6 text-center text-slate-700 text-[10px] tracking-[0.2em] uppercase">
-        &copy; 2025 Softwave Studio • Open & Free Design System
+      <footer className="py-8 border-t border-white/5 text-center">
+        <p className="text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold">
+          Powered by Softwave Mood Engine & Unsplash
+        </p>
       </footer>
     </div>
   );

@@ -8,26 +8,46 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- 다양한 한글 폰트 로드: 나눔명조, 나눔고딕, 블랙한산스, 고운도둠, 나눔붓글씨 -->
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Inter:wght@300;400;600&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --font-serif: 'Nanum Myeongjo', serif;
+        --font-sans: 'Nanum Gothic', sans-serif;
+        --font-display: 'Black Han Sans', sans-serif;
+        --font-rounded: 'Gowun Dodum', sans-serif;
+        --font-script: 'Nanum Brush Script', cursive;
+      }
+
       body {
         font-family: 'Noto Sans KR', sans-serif;
         background-color: #020617;
         color: #f8fafc;
         margin: 0;
+        overflow-x: hidden;
       }
-      /* 폰트 클래스 정의 */
-      .font-serif-kr { font-family: 'Nanum Myeongjo', serif; }
-      .font-sans-kr { font-family: 'Nanum Gothic', sans-serif; }
-      .font-display-kr { font-family: 'Black Han Sans', sans-serif; }
-      .font-rounded-kr { font-family: 'Gowun Dodum', sans-serif; }
-      .font-script-kr { font-family: 'Nanum Brush Script', cursive; }
+
+      /* 폰트 섞임 방지를 위한 명시적 클래스 설정 */
+      .font-serif-kr { font-family: var(--font-serif) !important; }
+      .font-sans-kr { font-family: var(--font-sans) !important; }
+      .font-display-kr { font-family: var(--font-display) !important; }
+      .font-rounded-kr { font-family: var(--font-rounded) !important; }
+      .font-script-kr { font-family: var(--font-script) !important; }
       
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: #0f172a; }
-      ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-      ::-webkit-scrollbar-thumb:hover { background: #334155; }
+      /* 스크롤바 디자인 */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.4);
+        border-radius: 10px;
+      }
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+      }
     </style>
     <script type="importmap">
 {
