@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- crossorigin="anonymous"를 설정하여 캔버스 캡처 시 스타일시트 접근 에러 방지 -->
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Inter:wght@300;400;600&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" crossorigin="anonymous">
     <style>
       :root {
@@ -34,28 +33,28 @@
       .font-rounded-kr { font-family: var(--font-rounded) !important; }
       .font-script-kr { font-family: var(--font-script) !important; }
       
-      /* 스크롤바 강제 노출 설정 (모바일에서도 가시성 확보) */
+      /* 무드 라이브러리 스크롤바 강제 노출 및 스타일 */
       .custom-scrollbar {
         scrollbar-width: thin;
         scrollbar-color: #6366f1 rgba(255, 255, 255, 0.05);
-        overflow-y: scroll !important;
-        -webkit-overflow-scrolling: touch;
+        overflow-y: scroll !important; /* 항상 스크롤 생성 */
       }
       
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
+        height: 6px;
         display: block !important;
       }
       
       .custom-scrollbar::-webkit-scrollbar-track {
-        background: rgba(15, 23, 42, 0.5);
+        background: rgba(15, 23, 42, 0.3);
         border-radius: 10px;
       }
       
       .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #6366f1;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .no-select {
@@ -63,15 +62,38 @@
         -webkit-user-select: none;
       }
 
-      /* 모바일에서 툴바 조정 시 프리뷰가 고정되도록 하는 스타일 */
-      @media (max-width: 1024px) {
+      /* 결과물(캔버스) 고정 스타일 */
+      @media (max-width: 1023px) {
         .sticky-preview {
           position: sticky;
-          top: 64px; /* 헤더 높이 */
+          top: 64px; /* Header height */
           z-index: 40;
           background-color: #020617;
           padding-bottom: 12px;
+          margin-left: -1.5rem;
+          margin-right: -1.5rem;
+          padding-left: 1.5rem;
+          padding-right: 1.5rem;
+          box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.8);
         }
+      }
+      
+      @media (min-width: 1024px) {
+        .sticky-preview {
+          position: sticky;
+          top: 96px;
+          z-index: 40;
+        }
+      }
+
+      /* 가로 스크롤 프리셋용 */
+      .horizontal-presets {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        display: flex;
+        gap: 0.75rem;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
       }
     </style>
     <script type="importmap">

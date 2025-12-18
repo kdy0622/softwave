@@ -18,43 +18,37 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
 
   const getFontBaseStyles = () => {
     switch(config.fontStyle) {
-      case 'display': return { baseSize: 'text-[6vw] md:text-[64px]', weight: 'font-normal', extra: 'tracking-tighter leading-[1.1]' };
-      case 'script': return { baseSize: 'text-[7vw] md:text-[80px]', weight: 'font-normal', extra: 'tracking-normal leading-normal' };
-      case 'rounded': return { baseSize: 'text-[5vw] md:text-[52px]', weight: 'font-normal', extra: 'tracking-tight leading-snug' };
-      case 'serif': return { baseSize: 'text-[5vw] md:text-[56px]', weight: 'font-bold', extra: 'tracking-tight leading-snug' };
-      case 'sans': return { baseSize: 'text-[5vw] md:text-[52px]', weight: 'font-bold', extra: 'tracking-tighter leading-tight' };
-      default: return { baseSize: 'text-[5vw] md:text-[52px]', weight: 'font-bold', extra: 'tracking-tight leading-tight' };
+      case 'display': return { baseSize: 'text-[6.5vw] md:text-[68px]', weight: 'font-normal', extra: 'tracking-tighter leading-[1.05]' };
+      case 'script': return { baseSize: 'text-[8.5vw] md:text-[92px]', weight: 'font-normal', extra: 'tracking-normal leading-normal' };
+      case 'rounded': return { baseSize: 'text-[5.5vw] md:text-[56px]', weight: 'font-normal', extra: 'tracking-tight leading-snug' };
+      case 'serif': return { baseSize: 'text-[5.5vw] md:text-[60px]', weight: 'font-bold', extra: 'tracking-tight leading-snug' };
+      case 'sans': return { baseSize: 'text-[5.5vw] md:text-[56px]', weight: 'font-bold', extra: 'tracking-tighter leading-tight' };
+      default: return { baseSize: 'text-[5.5vw] md:text-[56px]', weight: 'font-bold', extra: 'tracking-tight leading-tight' };
     }
   };
 
   const fontStyles = getFontBaseStyles();
 
   /**
-   * 텍스트 자동 크기 조정 로직
-   * 캡처 시 요소의 크기가 1280px로 변경되더라도 레이아웃을 유지하기 위해
-   * containerWidth를 1280px로 가정한 고정 비율 캡처를 지원하도록 보정합니다.
+   * 텍스트 자동 스케일링
+   * 캔버스 크기(브라우저 크기 vs 1280px 고정 캡처)에 맞춰 텍스트가 잘리지 않게 조정합니다.
    */
   useLayoutEffect(() => {
     const adjustScale = () => {
       if (!containerRef.current) return;
 
-      // 현재 화면에서의 너비 (반응형)
-      const currentWidth = containerRef.current.offsetWidth;
-      // 캡처 시 기준이 되는 고정 너비 (유튜브 썸네일 표준)
-      const targetWidth = 1280;
+      const containerWidth = containerRef.current.offsetWidth;
+      // html-to-image 캡처 시 강제 1280px 렌더링을 고려한 유효 너비 계산
+      const effectiveWidth = containerWidth > 0 && containerWidth < 1200 ? containerWidth : 1280;
       
-      // 캡처 중인지 확인 (html-to-image는 요소 크기를 강제로 변경함)
-      // 기준 너비는 캡처 시점에 targetWidth가 되고, 브라우저 표시 시점에 currentWidth가 됨
-      const containerWidth = (currentWidth > 0 && currentWidth < 1200) ? currentWidth : targetWidth;
-      
-      const horizontalPadding = containerWidth * 0.16; 
-      const maxAllowedWidth = containerWidth - horizontalPadding;
+      const horizontalPadding = effectiveWidth * 0.16; 
+      const maxAllowedWidth = effectiveWidth - horizontalPadding;
 
       if (titleRef.current) {
         titleRef.current.style.transform = 'scale(1)';
         const naturalWidth = titleRef.current.scrollWidth;
         if (naturalWidth > maxAllowedWidth && naturalWidth > 0) {
-          setTitleScale(Math.max(0.2, maxAllowedWidth / naturalWidth)); 
+          setTitleScale(Math.max(0.1, maxAllowedWidth / naturalWidth)); 
         } else {
           setTitleScale(1);
         }
@@ -63,9 +57,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
       if (subtitleRef.current) {
         subtitleRef.current.style.transform = 'scale(1)';
         const naturalWidth = subtitleRef.current.scrollWidth;
-        const maxSubWidth = maxAllowedWidth * 0.8;
+        const maxSubWidth = maxAllowedWidth * 0.85;
         if (naturalWidth > maxSubWidth && naturalWidth > 0) {
-          setSubtitleScale(Math.max(0.3, maxSubWidth / naturalWidth));
+          setSubtitleScale(Math.max(0.2, maxSubWidth / naturalWidth));
         } else {
           setSubtitleScale(1);
         }
@@ -74,10 +68,9 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
 
     const resizeObserver = new ResizeObserver(adjustScale);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
-    adjustScale();
     
-    // 텍스트 변경 시 즉각 반영
-    const timer = setTimeout(adjustScale, 50);
+    adjustScale();
+    const timer = setTimeout(adjustScale, 300);
     
     return () => {
       resizeObserver.disconnect();
@@ -92,15 +85,15 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         else if (ref) ref.current = node;
         (containerRef as any).current = node;
       }} 
-      className="relative aspect-video w-full overflow-hidden bg-slate-950 select-none no-select shadow-inner"
-      style={{ isolation: 'isolate', width: '100%', minHeight: '100px' }}
+      className="relative aspect-video w-full overflow-hidden bg-slate-950 select-none shadow-2xl"
+      style={{ isolation: 'isolate', width: '100%', minHeight: '100px', display: 'block' }}
     >
       {/* 1. 배경 이미지 레이어 */}
       <div className="absolute inset-0 z-0">
         {config.backgroundImage ? (
           <img 
             src={config.backgroundImage} 
-            className="w-full h-full object-cover block"
+            className="w-full h-full object-cover block transition-opacity duration-500"
             style={{ filter: filter?.css || '' }}
             crossOrigin="anonymous"
             loading="eager"
@@ -111,28 +104,28 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
         )}
       </div>
 
-      {/* 2. 오버레이 레이어 */}
+      {/* 2. 가독성 오버레이 */}
       <div 
         className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity z-10"
-        style={{ opacity: Math.max(0.3, config.overlayOpacity + 0.1) }}
+        style={{ opacity: Math.max(0.3, config.overlayOpacity + 0.15) }}
       ></div>
 
       {/* 3. 텍스트 컨텐츠 레이어 */}
       <div className="absolute inset-0 p-[8%] flex flex-col justify-end items-start z-20">
         {config.icon && (
-          <div className="text-[10vw] md:text-5xl mb-4 md:mb-6 drop-shadow-2xl opacity-90">
+          <div className="text-[11vw] md:text-6xl mb-6 md:mb-10 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] opacity-95">
             {config.icon}
           </div>
         )}
         
-        <div className="w-full flex flex-col items-start">
+        <div className="w-full flex flex-col items-start gap-1">
           <h1 
             ref={titleRef}
-            className={`${selectedFont?.class} ${fontStyles.baseSize} ${fontStyles.weight} ${fontStyles.extra} text-white whitespace-nowrap origin-left transition-transform duration-200`}
+            className={`${selectedFont?.class} ${fontStyles.baseSize} ${fontStyles.weight} ${fontStyles.extra} text-white whitespace-nowrap origin-left transition-transform duration-300`}
             style={{ 
               transform: `scale(${titleScale})`,
               width: 'max-content',
-              textShadow: '0 4px 16px rgba(0,0,0,0.6)'
+              textShadow: '0 4px 20px rgba(0,0,0,0.8)'
             }}
           >
             {config.title}
@@ -140,27 +133,27 @@ const Canvas = forwardRef<HTMLDivElement, CanvasProps>(({ config, filter }, ref)
           
           <div 
             ref={subtitleRef}
-            className="mt-3 md:mt-5 flex items-center gap-3 md:gap-4 origin-left transition-transform duration-200"
+            className="mt-4 md:mt-6 flex items-center gap-4 md:gap-5 origin-left transition-transform duration-300"
             style={{ 
               transform: `scale(${subtitleScale})`,
               width: 'max-content'
             }}
           >
-            <div className="w-6 md:w-10 h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.7)]"></div>
-            <p className="text-[3vw] md:text-[18px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.4em] uppercase whitespace-nowrap opacity-80">
+            <div className="w-8 md:w-12 h-1 bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)]"></div>
+            <p className="text-[3vw] md:text-[20px] font-light text-slate-300 tracking-[0.2em] md:tracking-[0.5em] uppercase whitespace-nowrap opacity-90 drop-shadow-xl">
               {config.subtitle}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 4. 브랜딩 워터마크 레이어 */}
-      <div className="absolute top-[8%] right-[8%] flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 z-30">
-        <span className="text-[1.5vw] md:text-[9px] tracking-[0.3em] font-bold text-white uppercase opacity-70">SOFTWAVE STUDIO</span>
+      {/* 4. 브랜딩 워터마크 */}
+      <div className="absolute top-[8%] right-[8%] flex items-center gap-3 bg-black/50 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 z-30">
+        <span className="text-[1.8vw] md:text-[10px] tracking-[0.4em] font-bold text-white uppercase opacity-70">SOFTWAVE STUDIO</span>
       </div>
       
-      {/* 5. 텍스처 오버레이 */}
-      <div className="absolute inset-0 opacity-[0.05] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-40"></div>
+      {/* 5. 시각적 텍스처 오버레이 */}
+      <div className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] z-40"></div>
     </div>
   );
 });

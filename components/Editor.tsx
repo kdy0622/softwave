@@ -24,145 +24,120 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
     if (!canvasRef.current) return;
     setIsDownloading(true);
     
-    // 폰트 로딩 및 렌더링 안정화를 위해 잠시 대기
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 폰트 및 리소스 렌더링 확정을 위해 충분한 지연 시간 부여
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     try {
       /**
-       * html-to-image 캡처 개선:
-       * 모바일에서 작게 보이는 현상은 캡처 시점의 요소 크기가 작기 때문입니다.
-       * style 옵션을 통해 캡처 시점에만 강제로 1280x720 크기로 확장하여 렌더링합니다.
+       * 고화질 원본 크기 저장 로직
+       * 인위적인 너비/높이 제한을 제거하고 pixelRatio를 높여 '전체화면' 수준의 고해상도 이미지를 생성합니다.
        */
       const dataUrl = await htmlToImage.toJpeg(canvasRef.current, { 
-        quality: 0.95, 
-        width: 1280,
-        height: 720,
-        pixelRatio: 1,
+        quality: 1.0,
+        pixelRatio: 2, // 2배 고해상도 캡처
         backgroundColor: '#020617',
         cacheBust: true,
         style: {
-          transform: 'scale(1)',
-          width: '1280px',
-          height: '720px',
+          transform: 'none',
+          margin: '0',
+          padding: '0',
+          borderRadius: '0',
           position: 'static',
           display: 'block'
         }
       });
       
       const link = document.createElement('a');
-      link.download = `softwave-thumbnail-${Date.now()}.jpg`;
+      link.download = `softwave-fullres-${Date.now()}.jpg`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Download Error:', err);
-      alert('이미지 저장 중 오류가 발생했습니다. 브라우저 캐시를 비우거나 잠시 후 다시 시도해주세요.');
+      alert('고화질 이미지 생성 중 오류가 발생했습니다.');
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleSearch = () => {
-    const searchQuery = prompt.trim() || "cinematic cozy night atmosphere";
+    const searchQuery = prompt.trim() || "cinematic cozy lofi atmosphere";
     onGenerate(searchQuery);
   };
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8 items-start mb-20">
-      {/* 프리뷰 영역: 모바일에서도 툴바 조절 시 항상 상단에 노출되도록 sticky 적용 */}
-      <div className="w-full lg:col-span-7 xl:col-span-8 space-y-4 lg:sticky lg:top-20 z-30 sticky-preview">
-        <div className="bg-slate-900 border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
-          <div className="p-3 md:p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/90 backdrop-blur-md">
+    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-12 items-start mb-24">
+      
+      {/* 1. 결과물 프리뷰 (Sticky 영역) */}
+      <div className="w-full lg:col-span-7 xl:col-span-8 sticky-preview">
+        <div className="bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="p-3 md:p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl">
             <div className="flex items-center gap-2">
               <div className="flex space-x-1">
-                <span className="w-2 h-2 rounded-full bg-red-500/50"></span>
-                <span className="w-2 h-2 rounded-full bg-indigo-500/50 animate-pulse"></span>
+                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                <div className="w-2 h-2 rounded-full bg-slate-800"></div>
               </div>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-2 hidden sm:inline">LIVE PREVIEW</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-2 whitespace-nowrap">Result Preview</span>
             </div>
             <button 
               onClick={handleDownload}
               disabled={isDownloading || isLoading}
-              className="flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-lg"
+              className="flex items-center gap-2 px-4 md:px-6 py-2 rounded-full text-[10px] md:text-[11px] font-bold bg-white text-slate-950 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-xl whitespace-nowrap"
             >
-              {isDownloading ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-                  저장 중...
-                </span>
-              ) : '결과물 저장'}
+              {isDownloading ? '생성 중...' : '고화질 저장'}
             </button>
           </div>
           
-          <div className="relative p-0 bg-slate-950 flex items-center justify-center overflow-hidden">
+          <div className="relative aspect-video bg-slate-950 flex items-center justify-center overflow-hidden">
             <Canvas ref={canvasRef} config={config} filter={activeFilter} />
             {isLoading && (
-              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
-                <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-white font-bold text-sm">무드를 검색하는 중...</p>
+              <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center z-50">
+                <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-white font-bold text-xs tracking-widest">CREATING MOOD...</p>
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* 배경 빠른 변경 도구: 모바일/태블릿에서도 보이도록 수정 (hidden lg:flex -> flex) */}
-        <div className="flex gap-3 bg-slate-900/50 border border-white/5 rounded-2xl p-3 items-center">
-          <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-2 hidden md:block">Presets</label>
-          <div className="flex gap-2 overflow-x-auto custom-scrollbar flex-1 pb-1">
+      {/* 2. 컨트롤 영역 (스크롤 가능) */}
+      <div className="w-full lg:col-span-5 xl:col-span-4 space-y-8">
+        
+        {/* 배경 프리셋 */}
+        <section className="bg-slate-900/40 border border-white/5 rounded-3xl p-5 space-y-3">
+          <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest px-1 whitespace-nowrap">Background Presets</label>
+          <div className="horizontal-presets custom-scrollbar">
             {PRESET_BACKGROUNDS.map(bg => (
               <button 
                 key={bg.id}
                 onClick={() => setConfig({ ...config, backgroundImage: bg.url })}
-                className={`flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${config.backgroundImage === bg.url ? 'border-indigo-500 scale-90 ring-4 ring-indigo-500/10' : 'border-transparent opacity-40 hover:opacity-100'}`}
               >
-                <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                <img src={bg.url} className="w-full h-full object-cover" crossOrigin="anonymous" loading="lazy" />
               </button>
             ))}
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* 에디터 툴박스 */}
-      <div className="w-full lg:col-span-5 xl:col-span-4 space-y-6">
-        <div className="bg-slate-900 border border-white/5 rounded-3xl p-5 md:p-7 shadow-2xl space-y-8">
+        {/* 편집 컨트롤러 카드 */}
+        <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] p-6 md:p-8 shadow-2xl space-y-12">
           
-          {/* 1. 배경 생성 */}
-          <section className="space-y-4">
-            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">AI Background Engine</label>
-            <div className="flex gap-2">
-              <input 
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="분위기 입력 (예: 비오는 도시 야경)"
-                className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[12px] text-white focus:outline-none focus:border-indigo-500/50"
-              />
-              <button 
-                onClick={handleSearch}
-                disabled={isLoading}
-                className="px-4 py-3 rounded-xl text-[12px] font-bold bg-white/5 text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95"
-              >
-                검색
-              </button>
-            </div>
-          </section>
-
-          {/* 2. 타이포그래피 */}
-          <section className="space-y-4">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Typography & Content</label>
-            <div className="space-y-2">
+          {/* 타이포그래피 설정 (모바일 최적화) */}
+          <section className="space-y-6">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block whitespace-nowrap">Typography</label>
+            <div className="space-y-3">
               <input 
                 type="text"
                 value={config.title}
                 onChange={(e) => setConfig({ ...config, title: e.target.value })}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-4 text-sm font-bold text-white focus:border-indigo-500/50 focus:outline-none"
-                placeholder="메인 타이틀"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-4 text-sm md:text-base font-bold text-white focus:border-indigo-500/50 focus:outline-none"
+                placeholder="메인 제목"
               />
               <input 
                 type="text"
                 value={config.subtitle}
                 onChange={(e) => setConfig({ ...config, subtitle: e.target.value })}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-[11px] text-slate-400 focus:border-indigo-500/50 focus:outline-none"
-                placeholder="서브 타이틀"
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl px-5 py-3 text-[10px] md:text-xs text-slate-400 focus:border-indigo-500/50 focus:outline-none"
+                placeholder="서브 제목"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -170,7 +145,7 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
                 <button 
                   key={font.id}
                   onClick={() => setConfig({ ...config, fontStyle: font.id })}
-                  className={`py-3 text-[10px] rounded-xl border transition-all ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'} ${font.class}`}
+                  className={`py-3 md:py-4 text-[10px] md:text-[11px] rounded-2xl border transition-all whitespace-nowrap ${config.fontStyle === font.id ? 'bg-white text-slate-950 border-white shadow-xl' : 'bg-slate-950 border-white/5 text-slate-500 hover:text-white'} ${font.class}`}
                 >
                   {font.name}
                 </button>
@@ -178,37 +153,40 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
             </div>
           </section>
 
-          {/* 3. 무드 라이브러리: 스크롤 가시성 고정 */}
-          <section className="flex flex-col space-y-3">
-            <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Mood Library Selection</label>
+          {/* 무드 라이브러리 (항상 스크롤바 유지) */}
+          <section className="flex flex-col space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest whitespace-nowrap">Mood Copy Library</label>
+              <span className="text-[9px] text-slate-600 font-mono hidden xs:block">20 SAMPLES</span>
+            </div>
             <div 
-              className="h-[280px] md:h-[340px] overflow-y-scroll bg-slate-950 rounded-2xl border border-white/10 custom-scrollbar shadow-inner"
+              className="h-[320px] overflow-y-scroll bg-slate-950 rounded-[2rem] border border-white/5 custom-scrollbar shadow-inner"
               style={{ display: 'block' }}
             >
-              <div className="flex flex-col p-2 gap-1.5">
+              <div className="flex flex-col p-3 gap-2">
                 {(branding?.copywriting || DEFAULT_BRANDING.copywriting).map((txt, i) => (
                   <button 
                     key={i}
                     onClick={() => setConfig({ ...config, title: txt })}
-                    className={`text-left text-[11px] p-4 border rounded-xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-slate-900 border-transparent text-slate-400 hover:border-white/10 hover:text-white'}`}
+                    className={`text-left text-[10px] md:text-[11px] p-4 md:p-5 border rounded-2xl transition-all active:scale-[0.98] ${config.title === txt ? 'bg-indigo-600/10 border-indigo-500/30 text-indigo-100' : 'bg-slate-900/40 border-transparent text-slate-400 hover:border-white/10 hover:text-white'}`}
                   >
-                    <span className="opacity-40 mr-2 text-[9px]">#</span>{txt}
+                    <span className="opacity-20 mr-2 md:mr-3 text-[9px] font-mono">#{String(i+1).padStart(2, '0')}</span>{txt}
                   </button>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* 4. 비주얼 제어 */}
-          <section className="space-y-6 pb-4">
+          {/* 비주얼 옵션 */}
+          <section className="space-y-8 pb-4">
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 block">Atmosphere Filters</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-5 block whitespace-nowrap">Visual Filters</label>
               <div className="flex flex-wrap gap-2">
                 {FILTERS.map(f => (
                   <button 
                     key={f.name}
                     onClick={() => setConfig({ ...config, filter: f.name })}
-                    className={`px-4 py-2 text-[10px] rounded-xl border transition-all ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-slate-950 border-white/5 text-slate-500'}`}
+                    className={`px-4 md:px-5 py-2.5 md:py-3 text-[9px] md:text-[10px] rounded-2xl border transition-all whitespace-nowrap ${config.filter === f.name ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' : 'bg-slate-950 border-white/5 text-slate-500'}`}
                   >
                     {f.name}
                   </button>
@@ -216,25 +194,25 @@ const Editor: React.FC<EditorProps> = ({ config, setConfig, onGenerate, isLoadin
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Darkness</label>
-                <span className="text-[10px] font-mono text-indigo-400">{Math.round(config.overlayOpacity * 100)}%</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Overlay Darken</label>
+                <span className="text-[11px] font-mono text-indigo-400 font-bold">{Math.round(config.overlayOpacity * 100)}%</span>
               </div>
               <input 
-                type="range" min="0" max="0.8" step="0.01"
+                type="range" min="0" max="0.85" step="0.01"
                 value={config.overlayOpacity}
                 onChange={(e) => setConfig({ ...config, overlayOpacity: parseFloat(e.target.value) })}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
               />
             </div>
 
-            <div className="flex justify-around bg-slate-950 p-3 rounded-2xl border border-white/5">
+            <div className="flex justify-between bg-slate-950 p-4 rounded-[2rem] border border-white/5 shadow-inner">
               {ICONS.map(i => (
                 <button 
                   key={i.id}
                   onClick={() => setConfig({ ...config, icon: i.emoji === config.icon ? null : i.emoji })}
-                  className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${config.icon === i.emoji ? 'bg-white text-2xl scale-110 shadow-xl' : 'bg-transparent text-lg opacity-30 hover:opacity-100'}`}
+                  className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-2xl transition-all ${config.icon === i.emoji ? 'bg-white text-2xl md:text-3xl scale-110 shadow-2xl' : 'bg-transparent text-xl md:text-2xl opacity-15 hover:opacity-100'}`}
                 >
                   {i.emoji}
                 </button>

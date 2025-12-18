@@ -50,29 +50,29 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-950">
       <header className="border-b border-white/5 bg-slate-900/30 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">S</div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Softwave Studio</h1>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 text-sm md:text-base">S</div>
+            <div className="hidden xs:block">
+              <h1 className="text-sm md:text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">Softwave Studio</h1>
               <div className="flex items-center gap-1">
                 <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
-                <span className="text-[9px] text-green-500 font-bold uppercase tracking-widest">Free Mode Active</span>
+                <span className="text-[8px] md:text-[9px] text-green-500 font-bold uppercase tracking-widest">Active</span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
+          <div className="flex items-center">
             <nav className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
               <button 
                 onClick={() => setActiveTab('editor')}
-                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'editor' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 md:px-5 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'editor' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
               >
                 에디터
               </button>
               <button 
                 onClick={() => setActiveTab('branding')}
-                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${activeTab === 'branding' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 md:px-5 py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${activeTab === 'branding' ? 'bg-white text-slate-950 shadow-lg' : 'text-slate-400 hover:text-white'}`}
               >
                 브랜딩 가이드
               </button>
@@ -81,7 +81,7 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8">
         {activeTab === 'editor' ? (
           <Editor 
             config={config} 
@@ -96,7 +96,7 @@ const App: React.FC = () => {
       </main>
 
       <footer className="py-8 border-t border-white/5 text-center">
-        <p className="text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold">
+        <p className="text-slate-600 text-[10px] tracking-[0.2em] uppercase font-bold px-4">
           Powered by Softwave Mood Engine & Unsplash
         </p>
       </footer>
